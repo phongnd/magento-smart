@@ -1,0 +1,164 @@
+<div id="login_popup" class="popup">
+    <div id="xpos-login">
+        <h4><?php echo $this->__('Login X-POS') ?></h4>
+        <ul>
+            <li><label>Username:</label><input id="xpos_user_username" name="xpos_user_username" type="text"/></li>
+            <li><label>Password:</label><input onkeypress="handle_key_press(event)" id="xpos_user_password"
+                                               name="xpos_user_password" type="password"/></li>
+        </ul>
+        <div class="login-action">
+            <button id="btn_xpos_user_login" type="button" onclick="xpos_user_login()">Login</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    jQuery(document).ready(function () {
+
+        show_popup_login();
+        setInterval(check_login, 5000);
+
+    });
+
+    function show_popup_login() {
+        var isCashierEnable = <?php echo Mage::getStoreConfig('xpos/general/enabled_cashier'); ?>;
+
+        jQuery("#xpos_user_username").val('');
+        jQuery("#xpos_user_password").val('');
+
+        if (isCashierEnable == 0) {
+            jQuery('#is_user_limited').val(1);
+            $.jStorage.deleteKey('xpos_user');
+        }
+
+        if (isCashierEnable == 1 && $.jStorage.get('xpos_user') == null) {
+            jQuery('#login_popup').bPopup({
+                modalClose: false,
+                escClose: false,
+                opacity: 0.6,
+                speed: 450,
+                transition: 'slideIn',
+                positionStyle: 'fixed' //'fixed' or 'absolute'
+            });
+        } else {
+            if ($.jStorage.get('xpos_user') != null) {
+                setPermission();
+                jQuery('#xpos_user_id').val($.jStorage.get('xpos_user').xpos_user_id);
+                jQuery('#cashier_name').html($.jStorage.get('xpos_user').firstname + ' ' + $.jStorage.get('xpos_user').lastname);
+            } else {
+                <?php if (Mage::helper('xpos')->isWarehouseIntegrate() == 1) { ?>
+                show_popup_warehouse();
+                <?php }else{ ?>
+                show_popup_till();
+                <?php } ?>
+            }
+        }
+    }
+
+    function handle_key_press(e) {
+        if (e.keyCode === 13) {
+            xpos_user_login();
+        }
+        return false;
+    }
+
+    function xpos_user_login() {
+        var xpos_user_username = jQuery("#xpos_user_username").val();
+        var xpos_user_password = jQuery("#xpos_user_password").val();
+        var xpos_user_auto_logout = '<?php echo Mage::getStoreConfig('xpos/general/enabled_auto_logout'); ?>';
+        var xpos_user_timeout = '<?php echo Mage::getStoreConfig('xpos/general/login_time_out'); ?>';
+        if (xpos_user_username == '' || xpos_user_password == '') {
+            alert('This is required field!');
+        }
+        jQuery('#btn_xpos_user_login').attr('onclick', '');
+        jQuery.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "<?php echo Mage::helper("adminhtml")->getUrl('*/xpos/login');?>",
+            data: {
+                xpos_user_username: jQuery("#xpos_user_username").val(),
+                xpos_user_password: jQuery("#xpos_user_password").val()
+            }
+        }).done(function (data) {
+                if (data != null) {
+                    if (xpos_user_auto_logout == 0) {
+                        $.jStorage.set('xpos_user', data);
+                    } else {
+                        var timeout = 900;
+                        if (xpos_user_timeout != '') {
+                            timeout = xpos_user_timeout;
+                        }
+                        var exp = 1000 * timeout;
+                        $.jStorage.set('is_login', 1);
+                        $.jStorage.set('xpos_user', data);
+                        $.jStorage.setTTL("xpos_user", exp);
+                    }
+                    jQuery('#cashier_name').html($.jStorage.get('xpos_user').firstname + ' ' + $.jStorage.get('xpos_user').lastname);
+                    jQuery('#xpos_user_id').val($.jStorage.get('xpos_user').xpos_user_id);
+                    setPermission();
+                    jQuery('#login_popup').bPopup().close();
+                    <?php if (Mage::helper('xpos')->isWarehouseIntegrate() == 1) { ?>
+                    show_popup_warehouse();
+                    <?php }else{ ?>
+                    show_popup_till();
+                    <?php } ?>
+                } else {
+                    alert('Wrong username or password!');
+                }
+                jQuery('#btn_xpos_user_login').attr('onclick', 'xpos_user_login()');
+            })
+            .fail(function (data) {
+                alert('Wrong username or password!');
+            });
+    }
+
+    function xpos_user_logout() {
+        var isCashierEnable = <?php echo Mage::getStoreConfig('xpos/general/enabled_cashier'); ?>;
+
+        if (isCashierEnable == 1) {
+            //hide admin bar
+            jQuery('#config-panel').animate({
+                width: "0%",
+                opacity: "1"
+            });
+            jQuery('#config-button').removeClass('show').addClass('hide');
+            jQuery('#sidebar').hide(0);
+            jQuery('.xpos-wrapper').removeClass("wrapper-active");
+            //end
+
+            jQuery('#cashier_name').html("Default");
+            $.jStorage.deleteKey('is_login');
+            $.jStorage.deleteKey('xpos_user');
+            location.reload();
+            //show_popup_login();
+        } else {
+            window.location.href = "<?php echo Mage::helper("adminhtml")->getUrl("*");?>";
+        }
+
+    }
+
+    function check_login() {
+        if ($.jStorage.get('xpos_user') == null && ($.jStorage.get('is_login') == 1)) {
+            $.jStorage.deleteKey('is_login');
+            xpos_user_logout();
+        }
+    }
+
+    function setPermission(){
+        jQuery('#is_user_limited').val($.jStorage.get('xpos_user').type);
+        jQuery('#admin_menu_item').html();
+        var limit  = jQuery('#is_user_limited').val();
+        if(limit==0){
+            jQuery('body').on('keydown','.edit_price',function(event){
+                event.preventDefault();
+            });
+            jQuery('#discount_value').hover(function(){
+                jQuery(this).css('background-color','#f7f7f7');
+                jQuery(this).css('border','1px solid #f7f7f7');
+            });
+            jQuery('#discount_value').prop('readonly',"true").change();
+        }
+    }
+
+</script>

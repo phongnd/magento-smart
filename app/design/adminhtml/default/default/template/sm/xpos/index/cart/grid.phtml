@@ -1,0 +1,169 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     default_default
+ * @copyright   Copyright (c) 2010 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+?>
+<?php
+/**
+ * @see Mage_Adminhtml_Block_Sales_Order_Create_Items_Grid
+ */
+?>
+<?php $orderId = $this->getRequest()->getParam('order_id'); ?>
+<?php $this->updateTax(); ?>
+<?php $_items = $this->getItems(); ?>
+<div class="grid" id="order-items_grid">
+    <table cellspacing="0" class="data order-tables">
+        <col width="230"/>
+        <col width="52"/>
+        <col width="76"/>
+        <col width="96"/>
+        <col width="117"/>
+        <thead>
+        <tr class="headings">
+            <th class="no-link align-left"><?php echo $this->helper('sales')->__('Products') ?></th>
+            <th class="no-link align-center"><?php echo $this->helper('sales')->__('Qty') ?></th>
+            <th class="no-link align-center"><?php echo $this->helper('sales')->__('Tax') ?></th>
+            <th class="no-link align-right"><?php echo $this->helper('sales')->__('Price') ?></th>
+            <th class="no-link align-right"><?php echo $this->helper('sales')->__('Total') ?></th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (empty($_items)): ?>
+            <tr class="even">
+                <td class="empty-text a-center" colspan="5"><?php echo $this->helper('sales')->__(
+                        'No ordered items'
+                    ) ?>
+                </td>
+            </tr>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+<?php
+$bundle = Mage::helper('bundle/catalog_product_configuration');
+$configurable = Mage::helper('catalog/product_configuration');
+?>
+<?php if (!empty($_items)): ?>
+    <script type="text/javascript">
+        currentOrder = {};
+        var orderItem = {};
+        <?php foreach ($_items as $_item):?>
+        newOrderItem = {};
+        newOrderItem.id = <?php echo $_item->getId()?>;
+        newOrderItem.productId = <?php echo $_item->getProductId()?>;
+        newOrderItem.name = '<?php echo str_replace("'","\'",$_item->getName())?>';
+        newOrderItem.sku = '<?php echo str_replace("'","\'",$_item->getSku())?>';
+        newOrderItem.tax = <?php echo $_item->getTaxPercent()?>;
+        <?php
+            if($_item->hasOriginalCustomPrice()){
+//BEGIN FIX CUSTOM PRICE WITH TAX
+                if ($this->helper('tax')->displayCartPriceExclTax($this->getStore())) {
+                    if (Mage::helper('weee')->typeOfDisplay($_item, array(0, 1, 4), 'sales')) {
+                        $_item->setOriginalCustomPrice($_item->getCalculationPrice()+$_item->getWeeeTaxAppliedAmount()+$_item->getWeeeTaxDisposition());
+                    } else {
+                        $_item->setOriginalCustomPrice($_item->getCalculationPrice());
+                    }
+                } else {
+                    $_incl = $this->helper('checkout')->getPriceInclTax($_item);
+                    if (Mage::helper('weee')->typeOfDisplay($_item, array(0, 1, 4), 'sales')) {
+                        $_item->setOriginalCustomPrice($_incl + Mage::helper('weee')->getWeeeTaxInclTax($_item));
+                    } else {
+                        $_item->setOriginalCustomPrice($_incl-$_item->getWeeeTaxDisposition());
+                    }
+                }
+//END FIX CUSTOM PRICE WITH TAX
+            ?>
+        newOrderItem.price_name = 'item['+newOrderItem.id+'][custom_price]';
+        newOrderItem.price = <?php echo $_item->getOriginalCustomPrice()?>;
+        newOrderItem.priceInclTax = <?php echo $_item->getOriginalCustomPrice()?>;
+        <?php
+            } else{
+                if ($this->helper('tax')->displayCartPriceExclTax($this->getStore())) {
+                    if (Mage::helper('weee')->typeOfDisplay($_item, array(0, 1, 4), 'sales')) {
+                        $_price = $_item->getCalculationPrice()+$_item->getWeeeTaxAppliedAmount()+$_item->getWeeeTaxDisposition();
+                    } else {
+                        $_price = $_item->getCalculationPrice();
+                    }
+                } else {
+                    $_incl = $this->helper('checkout')->getPriceInclTax($_item);
+                    if (Mage::helper('weee')->typeOfDisplay($_item, array(0, 1, 4), 'sales')) {
+                        $_price = $_incl + Mage::helper('weee')->getWeeeTaxInclTax($_item);
+                    } else {
+                        $_price = $_incl-$_item->getWeeeTaxDisposition();
+                    }
+                }
+        ?>
+        newOrderItem.price = <?php echo $_price?>;
+        newOrderItem.priceInclTax = <?php echo $_price;
+
+         }?>;
+        <?php
+           // if($orderId){
+            ?>
+       // newOrderItem.price_name = 'item['+newOrderItem.id+'][custom_price]';
+        <?php
+          //  }
+        ?>
+
+        newOrderItem.options = [];
+        newOrderItem.qty = <?php echo $_item->getQty() * 1 ?>;
+        newOrderItem.subtotal = <?php echo $_item->getRowTotal()?>;
+        newOrderItem.subtotalInclTax = <?php echo $_item->getData('row_total_incl_tax')?>;
+        newOrderItem.class_item = '<?php if($_item->getProductType() == 'configurable' || $_item->getProductType() == 'bundle'){ echo "config item_config item_config-id"; } ?>';
+        newOrderItem.config_change ='<?php if($_item->getProductType() == 'configurable'|| $_item->getProductType() == 'bundle' ){echo "config_change item_config item_config-id" ;}  ?>';
+        newOrderItem.pos = <?php echo $_item->getId()?>;
+        newOrderItem.type = '<?php if($_item->getProductType()=="giftcard") echo "giftcard"; else echo "";?>';
+        <?php $product = Mage::getModel('catalog/product')->load($_item->getProductId());
+
+         $stock =  Mage::getModel('cataloginventory/stock_item')->loadByProduct($product);
+         $is_qty_decimal =  $stock->getData('is_qty_decimal');
+
+         $warehouseId = Mage::getSingleton('adminhtml/session')->getWarehouseId();
+           if($warehouseId){
+                 $collection_qty = Mage::getModel('xwarehouse/warehouse_product')->getCollection()
+                                 ->addFieldToFilter('warehouse_id', array('eq' => $warehouseId))
+                                 ->addFieldToFilter('product_id', array('eq'=>$product->getId()));
+                $info_array  = $collection_qty->getData();
+
+                $qtyStock = $info_array[0]['qty'];
+           }else{
+                $qtyStock =$stock->getQty();
+           }
+
+        if($qtyStock <= 0 && ( $product->getTypeId()=="simple")){  ?>
+            newOrderItem.out_stock =1;
+        <?php  }
+        ?>
+        newOrderItem.is_qty_decimal = <?php echo $is_qty_decimal ?>;
+        currentOrder[<?php echo $_item->getId()?>] = newOrderItem;
+        <?php endforeach; ?>
+        jQuery(document).ready(function() {
+            displayOrder(currentOrder,false);
+            initScroll("#items_area");
+            jQuery('#items_area').getNiceScroll().doScrollPos(0,100000);
+        });
+    </script>
+<?php endif; ?>
+
+

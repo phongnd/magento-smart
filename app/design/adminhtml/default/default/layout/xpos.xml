@@ -1,0 +1,509 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <adminhtml_xpos_index>
+        <reference name="root">
+            <remove name="head" />
+            <remove name="header" />
+            <remove name="menu" />
+            <remove name="notifications" />
+            <remove name="footer" />
+            <block type="adminhtml/page_head" name="xpos.head" as="head" template="sm/xpos/index/head.phtml">
+                <action method="addCss"><name>sm/xpos/css/xpos.css</name></action>
+
+                <action method="addItem"><type>js_css</type><name>calendar/calendar-win2k-1.css</name><params/><!--<if/><condition>can_load_calendar_js</condition>--></action>
+                <action method="addItem"><type>js</type><name>calendar/calendar.js</name><!--<params/><if/><condition>can_load_calendar_js</condition>--></action>
+                <action method="addItem"><type>js</type><name>calendar/calendar-setup.js</name><!--<params/><if/><condition>can_load_calendar_js</condition>--></action>
+
+                <action method="addJs"><script>prototype/prototype.js</script></action>
+                <action method="addJs"><script>lib/ccard.js</script></action>
+                <action method="addJs"><script>prototype/validation.js</script></action>
+                <action method="addJs"><script>varien/js.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/hash.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/events.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/form.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/loader.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/giftoptions/tooltip.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/grid.js</script></action>
+                <action method="addJs"><script>mage/adminhtml/tools.js</script></action>
+                <action method="addJs"><script>mage/translate.js</script></action>
+                <action method="addJs"><script>scriptaculous/scriptaculous.js</script></action>
+                <action method="addJs"><file>mage/adminhtml/product/composite/configure.js</file></action>
+                <action method="addJs"><file>varien/product.js</file></action>
+                <!--<action method="addJs"><file>varien/configurable.js</file></action>-->
+                <action method="addJs"><name>sm/xpos/configurable.js</name></action>
+
+
+                <action method="addJs"><name>sm/xpos/jstorage/jstorage.js</name></action>
+                <action method="addJs"><name>sm/xpos/jquery-1.9.1.min.js</name></action>
+                <action method="addJs"><name>sm/xpos/jquery-ui-1.10.4.custom.js</name></action>
+                <action method="addJs"><name>sm/xpos/bpopup/jquery.bpopup.min.js</name></action>
+                <action method="addJs"><name>sm/xpos/nano/nano.js</name></action>
+                <action method="addJs"><name>sm/xpos/sales.js</name></action>
+                <action method="addJs"><name>sm/xpos/xposui.js</name></action>
+                <action method="addJs"><name>sm/xpos/xposproduct.js</name></action>
+                <action method="addJs"><name>sm/xpos/xposreceipt.js</name></action>
+                <action method="addJs"><name>sm/xpos/library.js</name></action>
+                <action method="addJs"><name>sm/xpos/parse-track-data.js</name></action>
+                <action method="addJs"><name>sm/xpos/jquery.uniform.min.js</name></action>
+
+                <action method="addJs"><name>sm/xpos/mousetrap/mousetrap.min.js</name></action>
+                <action method="addJs"><name>sm/xpos/nicescroll/jquery.nicescroll.js</name></action>
+                <action method="addJs"><name>sm/xpos/jquery.printPage.js</name></action>
+
+                <block type="core/html_calendar" name="head.calendar" as="calendar" template="page/js/calendar.phtml"/>
+                <block type="adminhtml/template" name="optional_zip_countries" as="optional_zip_countries" template="directory/js/optional_zip_countries.phtml" />
+            </block>
+            <reference name="content">
+                <block type="adminhtml/sales_order_create_form" name="xpos" template="sm/xpos/index/index.phtml">
+                    <block type="page/html" name="message" template="sm/xpos/index/messages.phtml" />
+                    <block type="adminhtml/sales_order_create_form_account" name="customer_info" template="sm/xpos/index/customer/account.phtml"/>
+                    <block type="adminhtml/sales_order_create_form_account" name="customer_search" template="sm/xpos/index/customer/search.phtml"/>
+                    <block type="adminhtml/sales_order_create_billing_method_form" name="billing_method" template="sm/xpos/index/payment/payment.phtml"/>
+                    <block type="adminhtml/sales_order_create_shipping_method_form" name="shipping_method" template="sm/xpos/index/shipment/shipment.phtml"/>
+                    <block type="xpos/adminhtml_override_coupons" name="coupons" template="sm/xpos/index/coupons/form.phtml"/>
+                    <block type="xpos/adminhtml_override_totals" name="totals" template="sm/xpos/index/totals/totals.phtml"/>
+                    <block type="adminhtml/sales_order_create_items" name="items" template="sm/xpos/index/cart/items.phtml">
+                        <block type="xpos/adminhtml_override_grid" name="items_grid" template="sm/xpos/index/cart/grid.phtml"></block>
+                    </block>
+                    <block type="page/html" name="xpos.header" template="sm/xpos/index/header.phtml" />
+                    <block type="page/html" name="xpos.sidebar" template="sm/xpos/index/config.phtml" />
+                    <block type="page/html" name="xpos.right" template="sm/xpos/index/right.phtml" />
+                    <block type="page/html" name="xpos.footer" template="sm/xpos/index/footer.phtml" />
+                    <block type="page/html" name="xpos.login" template="sm/xpos/index/login.phtml" />
+                    <block type="xpos/adminhtml_index_warehouse_listwarehouse" name="xpos.warehouse" template="sm/xpos/index/warehouse.phtml" />
+                    <block type="xpos/adminhtml_index_till_listtill" name="xpos.till" template="sm/xpos/index/till.phtml" />
+                    <block type="page/html" name="xpos.order_list" template="sm/xpos/index/order/list.phtml"/>
+                    <block type="core/text_list" name="order_item_extra_info"></block>
+                    <block type="xpos/adminhtml_sales_order_create_giftcards" name="giftcards" template="sm/xpos/sales/order/create/giftcards.phtml"/>
+                    <block type="xpos/adminhtml_sales_order_create_storecredit" name="storecredit" template="sm/xpos/sales/order/create/storecredit.phtml"/>
+                </block>
+                
+                <block type="xpos/adminhtml_override_configure" name="override_configure" template="sm/xpos/override/configure.phtml"></block>
+            </reference>
+        </reference>
+    </adminhtml_xpos_index>
+    <adminhtml_xpos_printinvoice>
+        <reference name="head">
+            <action method="addCss" ifconfig="xpos/receipt/printing_invoice">
+                <file>sm/xpos/css/receipt/print.css</file>
+            </action>
+            <action method="addCss" ifconfig="xpos/receipt/printing_receipt">
+                <file>sm/xpos/css/receipt/receipt.css</file>
+            </action>
+            <action method="addCss" ifconfig="xpos/receipt/printing_receipt_80mm">
+                <file>sm/xpos/css/receipt/80mm.css</file>
+            </action>
+            <action method="addCss" ifconfig="xpos/receipt/printing_receipt_58mm">
+                <file>sm/xpos/css/receipt/58mm.css</file>
+            </action>
+            <action method="addJs">
+                <file>mage/adminhtml/giftmessage.js</file>
+            </action>
+            <action method="addJs">
+                <file>mage/adminhtml/giftoptions/tooltip.js</file>
+            </action>
+        </reference>
+        <reference name="root">
+            <remove name="header"/>
+            <remove name="menu"/>
+            <remove name="notifications"/>
+        </reference>
+        <reference name="content">
+            <block type="adminhtml/template" name="print_invoice"
+                   template="sm/xpos/receipt/invoice.phtml">
+            </block>
+        </reference>
+        <remove name="footer"></remove>
+    </adminhtml_xpos_printinvoice>
+    <adminhtml_xpos_printcreditmemo>
+        <reference name="head">
+            <action method="addCss" ifconfig="xpos/receipt/printing_invoice">
+                <file>sm/xpos/css/receipt/print.css</file>
+            </action>
+            <action method="addCss" ifconfig="xpos/receipt/printing_receipt">
+                <file>sm/xpos/css/receipt/receipt.css</file>
+            </action>
+            <action method="addCss" ifconfig="xpos/receipt/printing_receipt_80mm">
+                <file>sm/xpos/css/receipt/80mm.css</file>
+            </action>
+            <action method="addCss" ifconfig="xpos/receipt/printing_receipt_58mm">
+                <file>sm/xpos/css/receipt/58mm.css</file>
+            </action>
+            <action method="addJs">
+                <file>mage/adminhtml/giftmessage.js</file>
+            </action>
+            <action method="addJs">
+                <file>mage/adminhtml/giftoptions/tooltip.js</file>
+            </action>
+        </reference>
+        <reference name="root">
+            <remove name="header"/>
+            <remove name="menu"/>
+            <remove name="notifications"/>
+        </reference>
+        <reference name="content">
+            <!--<block type="adminhtml/template" name="print_creditmemo" template="sm/xpos/receipt/creditmemo.phtml">-->
+            <!--</block>-->
+            <block type="xpos/adminhtml_sales_order_creditmemo_print" name="print_creditmemo" template="sm/xpos/receipt/creditmemo.phtml">
+            </block>
+            <!--<block type="adminhtml/sales_order_creditmemo_view" name="sales_creditmemo_view">-->
+                <!--<block type="adminhtml/sales_order_creditmemo_view_form" name="form" template="sales/order/creditmemo/view/form.phtml">-->
+                    <!--<block type="adminhtml/sales_order_creditmemo_view_items" name="creditmemo_items" template="sales/order/creditmemo/view/items.phtml">-->
+                        <!--<action method="addItemRender"><type>default</type><block>adminhtml/sales_items_renderer_default</block><template>sales/order/creditmemo/view/items/renderer/default.phtml</template></action>-->
+                        <!--<action method="addColumnRender"><column>qty</column><block>adminhtml/sales_items_column_qty</block><template>sales/items/column/qty.phtml</template></action>-->
+                        <!--<action method="addColumnRender"><column>name</column><block>adminhtml/sales_items_column_name</block><template>sales/items/column/name.phtml</template></action>-->
+                        <!--<action method="addColumnRender"><column>name</column><block>adminhtml/sales_items_column_name_grouped</block><template>sales/items/column/name.phtml</template><type>grouped</type></action>-->
+                        <!--<block type="core/text_list" name="order_item_extra_info"></block>-->
+                    <!--</block>-->
+
+                    <!--<block type="adminhtml/sales_order_creditmemo_totals" name="creditmemo_totals" template="sales/order/totals.phtml">-->
+                        <!--<block type="adminhtml/sales_order_totals_tax" name="tax" template="sales/order/totals/tax.phtml" />-->
+                    <!--</block>-->
+                <!--</block>-->
+            <!--</block>-->
+        </reference>
+        <remove name="footer"></remove>
+    </adminhtml_xpos_printcreditmemo>
+
+    <adminhtml_report_eodreport>
+        <update handle="report_sales"/>
+        <reference name="content">
+            <block type="xpos/report_eodreport_eodreport" template="report/grid/container.phtml"
+                   name="sales.report.grid.container">
+                <block type="adminhtml/store_switcher" template="report/store/switcher/enhanced.phtml"
+                       name="store.switcher">
+                    <action method="setStoreVarName">
+                        <var_name>store_ids</var_name>
+                    </action>
+                </block>
+                <block type="xpos/report_eodreport_filter_form" name="grid.filter.form">
+                    <action method="addReportTypeOption" translate="value">
+                        <key>created_at_order</key>
+                        <value>Order Created Date</value>
+                    </action>
+                    <action method="addReportTypeOption" translate="value">
+                        <key>updated_at_order</key>
+                        <value>Order Updated Date</value>
+                    </action>
+                    <action method="setFieldOption" translate="value">
+                        <field>report_type</field>
+                        <option>note</option>
+                        <value>Order Updated Date report is real-time, does not need statistics refreshing.</value>
+                    </action>
+                </block>
+            </block>
+        </reference>
+    </adminhtml_report_eodreport>
+
+    <adminhtml_report_xpos>
+        <update handle="report_sales"/>
+        <reference name="content">
+            <block type="xpos/report_sales_sales" template="report/grid/container.phtml"
+                   name="sales.report.grid.container">
+                <block type="adminhtml/store_switcher" template="report/store/switcher/enhanced.phtml"
+                       name="store.switcher">
+                    <action method="setStoreVarName">
+                        <var_name>store_ids</var_name>
+                    </action>
+                </block>
+                <block type="xpos/adminhtml_report_filter_form_order" name="grid.filter.form">
+                    <action method="addReportTypeOption" translate="value">
+                        <key>created_at_order</key>
+                        <value>Order Created Date</value>
+                    </action>
+                    <action method="addReportTypeOption" translate="value">
+                        <key>updated_at_order</key>
+                        <value>Order Updated Date</value>
+                    </action>
+                    <action method="setFieldOption" translate="value">
+                        <field>report_type</field>
+                        <option>note</option>
+                        <value>Order Updated Date report is real-time, does not need statistics refreshing.</value>
+                    </action>
+                </block>
+            </block>
+        </reference>
+    </adminhtml_report_xpos>
+
+    <adminhtml_report_printzreport>
+        <reference name="content">
+            <block type="adminhtml/template" name="print_zreport"
+                   template="sm/xpos/index/report/print_z_report.phtml">
+            </block>
+        </reference>
+        <reference name="root">
+            <remove name="header"/>
+            <remove name="menu"/>
+            <remove name="notifications"/>
+            <remove name="footer"/>
+        </reference>
+
+    </adminhtml_report_printzreport>
+
+    <adminhtml_cashier_index>
+        <reference name="content">
+            <block type="xpos/adminhtml_cashier_cashier" name="cashier"/>
+        </reference>
+    </adminhtml_cashier_index>
+    <adminhtml_till_index>
+        <reference name="content">
+            <block type="xpos/adminhtml_till_till" name="till"/>
+        </reference>
+    </adminhtml_till_index>
+    <adminhtml_sales_order_view>
+        <reference name="order_info">
+            <action method="setTemplate"><template>sm/xpos/override/info_order.phtml</template></action>
+        </reference>
+    </adminhtml_sales_order_view>
+    <adminhtml_xpos_load_block_plain>
+        <reference name="root">
+            <block type="core/text_list" name="content" />
+        </reference>
+    </adminhtml_xpos_load_block_plain>
+    <adminhtml_xpos_load_block_json>
+        <reference name="root">
+            <block type="xpos/adminhtml_override_load" name="content" />
+        </reference>
+    </adminhtml_xpos_load_block_json>
+
+    <adminhtml_xpos_load_block_count_cash>
+        <reference name="content">
+            <block type="adminhtml/template" name="count_cash"
+                   template="sm/xpos/index/report/countcash.phtml">
+            </block>
+        </reference>
+        <reference name="root">
+            <remove name="header"/>
+            <remove name="menu"/>
+            <remove name="notifications"/>
+            <remove name="footer"/>
+        </reference>
+    </adminhtml_xpos_load_block_count_cash>
+
+    <adminhtml_xpos_load_block_xpos_report>
+        <reference name="content">
+            <block type="xpos/adminhtml_report_zreport" name="xpos_report"
+                   template="sm/xpos/index/report/zreport.phtml" />
+        </reference>
+    </adminhtml_xpos_load_block_xpos_report>
+
+    <adminhtml_xpos_load_block_report_list>
+        <reference name="content">
+            <block type="xpos/adminhtml_report_grid" name="report_list"
+                   template="sm/xpos/index/report/listreport.phtml" />
+        </reference>
+    </adminhtml_xpos_load_block_report_list>
+
+    <adminhtml_xpos_load_block_order_grid>
+        <reference name="content">
+            <block type="xpos/adminhtml_index_orderlist_order" name="order_grid" />
+        </reference>
+    </adminhtml_xpos_load_block_order_grid>
+    <adminhtml_xpos_load_block_order_saved>
+        <reference name="content">
+            <block type="xpos/adminhtml_index_orderlist_saved" name="order_saved" />
+        </reference>
+    </adminhtml_xpos_load_block_order_saved>
+    <adminhtml_xpos_load_block_order_view>
+        <reference name="content">
+            <block type="adminhtml/sales_order_view_tab_info" name="order_view"
+                   template="sm/xpos/override/order_view.phtml">
+                <block type="adminhtml/sales_order_view_info" name="infor_order"
+                       template="sm/xpos/override/infor_order.phtml" />
+                <block type="adminhtml/sales_order_view_items" name="order_items"
+                       template="sales/order/view/items.phtml">
+                    <action method="addItemRender">
+                        <type>default</type>
+                        <block>adminhtml/sales_order_view_items_renderer_default</block>
+                        <template>sales/order/view/items/renderer/default.phtml</template>
+                    </action>
+                    <action method="addColumnRender">
+                        <column>qty</column>
+                        <block>adminhtml/sales_items_column_qty</block>
+                        <template>sales/items/column/qty.phtml</template>
+                    </action>
+                    <action method="addColumnRender">
+                        <column>name</column>
+                        <block>adminhtml/sales_items_column_name</block>
+                        <template>sales/items/column/name.phtml</template>
+                    </action>
+                    <action method="addColumnRender">
+                        <column>name</column>
+                        <block>adminhtml/sales_items_column_name_grouped</block>
+                        <template>sales/items/column/name.phtml</template>
+                        <type>grouped</type>
+                    </action>
+                    <block type="core/text_list" name="order_item_extra_info"/>
+                </block>
+                <block type="adminhtml/sales_order_payment" name="order_payment"/>
+                <block type="xpos/adminhtml_override_history" name="order_history"
+                       template="sm/xpos/override/history.phtml"></block>
+                <block type="adminhtml/template" name="gift_options" template="sales/order/giftoptions.phtml">
+                    <block type="adminhtml/sales_order_view_giftmessage" name="order_giftmessage"
+                           template="sales/order/view/giftmessage.phtml"></block>
+                </block>
+                <block type="adminhtml/sales_order_totals" name="order_totals" template="sales/order/totals.phtml">
+                    <block type="adminhtml/sales_order_totals_tax" name="tax" template="sales/order/totals/tax.phtml"/>
+                </block>
+                <block type="xpos/adminhtml_sales_order_create_giftcards" template="sm/xpos/sales/order/create/giftcards.phtml" name="giftcards"/>
+                <block type="xpos/adminhtml_sales_order_create_storecredit" template="sm/xpos/sales/order/create/storecredit.phtml" name="storecredit"/>
+            </block>
+        </reference>
+    </adminhtml_xpos_load_block_order_view>
+    <adminhtml_xpos_load_block_order_customer_grid>
+        <reference name="content">
+            <block type="xpos/adminhtml_index_orderlist_customer" name="order_customer_grid" />
+        </reference>
+    </adminhtml_xpos_load_block_order_customer_grid>
+    <adminhtml_xpos_load_block_shipping_method>
+        <reference name="content">
+            <block type="adminhtml/sales_order_create_shipping_method_form" template="sm/xpos/index/shipment/shipment.phtml" name="shipping_method"/>
+        </reference>
+    </adminhtml_xpos_load_block_shipping_method>
+    <adminhtml_xpos_load_block_billing_method>
+        <reference name="content">
+            <block type="adminhtml/sales_order_create_billing_method_form" template="sm/xpos/index/payment/payment.phtml" name="billing_method"/>
+        </reference>
+    </adminhtml_xpos_load_block_billing_method>
+    <adminhtml_xpos_load_block_items>
+        <reference name="content">
+            <block type="adminhtml/sales_order_create_items" template="sm/xpos/index/cart/items.phtml" name="items">
+                <block type="xpos/adminhtml_override_grid" template="sm/xpos/index/cart/grid.phtml" name="items_grid"></block>
+            </block>
+            <block type="core/text_list" name="order_item_extra_info"></block>
+        </reference>
+    </adminhtml_xpos_load_block_items>
+    <adminhtml_xpos_load_block_totals>
+        <reference name="content">
+            <block type="xpos/adminhtml_override_totals" template="sm/xpos/index/totals/totals.phtml" name="totals"/>
+        </reference>
+    </adminhtml_xpos_load_block_totals>
+    <adminhtml_xpos_load_block_coupons>
+        <reference name="content">
+            <block type="xpos/adminhtml_override_coupons" template="sm/xpos/index/coupons/form.phtml" name="coupons"/>
+        </reference>
+    </adminhtml_xpos_load_block_coupons>
+    <adminhtml_xpos_load_block_giftcards>
+         <reference name="content">
+            <block type="xpos/adminhtml_sales_order_create_giftcards" template="sm/xpos/sales/order/create/giftcards.phtml" name="giftcards"/>
+         </reference>
+    </adminhtml_xpos_load_block_giftcards>
+
+    <adminhtml_xpos_load_block_storecredit>
+         <reference name="content">
+            <block type="xpos/adminhtml_sales_order_create_storecredit" template="sm/xpos/sales/order/create/storecredit.phtml" name="storecredit"/>
+         </reference>
+    </adminhtml_xpos_load_block_storecredit>
+
+
+    <adminhtml_xpos_load_block_message>
+        <reference name="content">
+            <block type="page/html" name="message" template="sm/xpos/index/messages.phtml" />
+        </reference>
+    </adminhtml_xpos_load_block_message>
+    <adminhtml_xpos_load_block_sales_creditmemo_create>
+        <reference name="content">
+            <block type="xpos/adminhtml_override_create" name="sales_creditmemo_create">
+                <block type="adminhtml/sales_order_creditmemo_create_form" name="form" template="sm/xpos/override/creditmemo.phtml">
+                    <block type="adminhtml/sales_order_creditmemo_create_items" name="order_items" template="sales/order/creditmemo/create/items.phtml">
+                        <action method="addItemRender">
+                            <type>default</type>
+                            <block>adminhtml/sales_items_renderer_default</block>
+                            <template>sales/order/creditmemo/create/items/renderer/default.phtml</template>
+                        </action>
+                        <action method="addColumnRender">
+                            <column>qty</column>
+                            <block>adminhtml/sales_items_column_qty</block>
+                            <template>sales/items/column/qty.phtml</template>
+                        </action>
+                        <action method="addColumnRender">
+                            <column>name</column>
+                            <block>adminhtml/sales_items_column_name</block>
+                            <template>sales/items/column/name.phtml</template>
+                        </action>
+                        <action method="addColumnRender">
+                            <column>name</column>
+                            <block>adminhtml/sales_items_column_name_grouped</block>
+                            <template>sales/items/column/name.phtml</template>
+                            <type>grouped</type>
+                        </action>
+                        <block type="core/text_list" name="order_item_extra_info"></block>
+                        <block type="adminhtml/sales_order_totalbar" name="order_totalbar" template="sales/order/totalbar.phtml"></block>
+
+                        <block type="adminhtml/sales_order_creditmemo_totals" name="creditmemo_totals" template="sales/order/totals.phtml">
+                            <block type="adminhtml/sales_order_creditmemo_create_adjustments" name="adjustments" template="sales/order/creditmemo/create/totals/adjustments.phtml"/>
+                            <block type="adminhtml/sales_order_totals_tax" name="tax" template="sales/order/totals/tax.phtml"/>
+                        </block>
+                        <block type="core/text_list" name="submit_before"/>
+                        <block type="core/text_list" name="submit_after"/>
+                    </block>
+                </block>
+            </block>
+        </reference>
+    </adminhtml_xpos_load_block_sales_creditmemo_create>
+    <adminhtml_xpos_load_block_transaction_grid>
+        <reference name="content">
+            <block type="xpos/adminhtml_index_transaction_grid" name="transaction_grid" template="sm/xpos/widget/grid.phtml" />
+        </reference>
+    </adminhtml_xpos_load_block_transaction_grid>
+    <adminhtml_xpos_updateqty>
+        <block type="adminhtml/sales_order_creditmemo_create_items" name="order_items" template="sales/order/creditmemo/create/items.phtml">
+            <action method="addItemRender"><type>default</type><block>adminhtml/sales_items_renderer_default</block><template>sales/order/creditmemo/create/items/renderer/default.phtml</template></action>
+            <action method="addColumnRender"><column>qty</column><block>adminhtml/sales_items_column_qty</block><template>sales/items/column/qty.phtml</template></action>
+            <action method="addColumnRender"><column>name</column><block>adminhtml/sales_items_column_name</block><template>sales/items/column/name.phtml</template></action>
+            <action method="addColumnRender"><column>name</column><block>adminhtml/sales_items_column_name_grouped</block><template>sales/items/column/name.phtml</template><type>grouped</type></action>
+            <block type="core/text_list" name="order_item_extra_info"></block>
+            <block type="adminhtml/sales_order_totalbar" name="order_totalbar" template="sales/order/totalbar.phtml"></block>
+
+            <block type="adminhtml/sales_order_creditmemo_totals" name="creditmemo_totals" template="sales/order/totals.phtml">
+                <block type="adminhtml/sales_order_creditmemo_create_adjustments" name="adjustments" template="sales/order/creditmemo/create/totals/adjustments.phtml" />
+                <block type="adminhtml/sales_order_totals_tax" name="tax" template="sales/order/totals/tax.phtml" />
+            </block>
+
+            <block type="core/text_list" name="submit_before" />
+            <block type="core/text_list" name="submit_after" />
+        </block>
+    </adminhtml_xpos_updateqty>
+    <ADMINHTML_XPOS_CATALOG_PRODUCT_COMPOSITE_CONFIGURE>
+        <block type="adminhtml/catalog_product_composite_fieldset" name="product.composite.fieldset" output="toHtml">
+            <block name="product.composite.fieldset.options" type="adminhtml/catalog_product_composite_fieldset_options" template="sm/xpos/product/fieldset/options.phtml">
+                <action method="addOptionRenderer"><type>text</type><block>catalog/product_view_options_type_text</block><template>sm/xpos/product/fieldset/options/type/text.phtml</template></action>
+                <action method="addOptionRenderer"><type>file</type><block>catalog/product_view_options_type_file</block><template>sm/xpos/product/fieldset/options/type/file.phtml</template></action>
+                <action method="addOptionRenderer"><type>select</type><block>catalog/product_view_options_type_select</block><template>sm/xpos/product/fieldset/options/type/select.phtml</template></action>
+                <action method="addOptionRenderer"><type>date</type><block>catalog/product_view_options_type_date</block><template>sm/xpos/product/fieldset/options/type/date.phtml</template></action>
+            </block>
+            <block type="adminhtml/catalog_product_composite_fieldset_qty" name="product.composite.fieldset.qty" template="sm/xpos/product/fieldset/qty.phtml"/>
+        </block>
+    </ADMINHTML_XPOS_CATALOG_PRODUCT_COMPOSITE_CONFIGURE>
+    <XPOS_PRODUCT_TYPE_configurable>
+        <reference name="product.composite.fieldset">
+            <block type="xpos/adminhtml_catalog_product_composite_fieldset_configurable" name="product.composite.fieldset.configurable" before="product.composite.fieldset.options" template="sm/xpos/product/fieldset/configurable.phtml" />
+        </reference>
+    </XPOS_PRODUCT_TYPE_configurable>
+    <XPOS_PRODUCT_TYPE_grouped>
+        <reference name="product.composite.fieldset">
+            <block type="xpos/adminhtml_catalog_product_composite_fieldset_grouped" name="product.composite.fieldset.grouped" before="product.composite.fieldset.options" template="sm/xpos/product/fieldset/grouped.phtml"/>
+            <remove name="product.composite.fieldset.qty"/>
+        </reference>
+    </XPOS_PRODUCT_TYPE_grouped>
+    <XPOS_PRODUCT_TYPE_bundle>
+        <reference name="product.composite.fieldset">
+            <block type="xpos/adminhtml_catalog_product_composite_fieldset_bundle" before="product.composite.fieldset.options" name="product.composite.fieldset.bundle" template="sm/xpos/product/fieldset/bundle.phtml">
+                <action method="addRenderer"><type>select</type><block>xpos/adminhtml_catalog_product_composite_fieldset_options_type_select</block></action>
+                <action method="addRenderer"><type>multi</type><block>xpos/adminhtml_catalog_product_composite_fieldset_options_type_multi</block></action>
+                <action method="addRenderer"><type>radio</type><block>xpos/adminhtml_catalog_product_composite_fieldset_options_type_radio</block></action>
+                <action method="addRenderer"><type>checkbox</type><block>xpos/adminhtml_catalog_product_composite_fieldset_options_type_checkbox</block></action>
+            </block>
+        </reference>
+    </XPOS_PRODUCT_TYPE_bundle>
+    <XPOS_PRODUCT_TYPE_giftcard>
+        <reference name="product.composite.fieldset">
+            <block type="xpos/adminhtml_catalog_product_composite_fieldset_giftcard" name="product.composite.fieldset.giftcard" before="product.composite.fieldset.options" template="sm/xpos/product/fieldset/giftcard.phtml"/>
+        </reference>
+    </XPOS_PRODUCT_TYPE_giftcard>
+    <adminhtml_system_config_edit>
+        <reference name="head">
+            <action method="addJs"><name>sm/xpos/jscolor/jscolor.js</name></action>
+        </reference>
+    </adminhtml_system_config_edit>
+</layout>

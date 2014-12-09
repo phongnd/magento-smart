@@ -1,0 +1,346 @@
+
+/*order list*/
+
+#tools{
+    margin-top: 20px;
+}
+
+#sales_order_create_order_grid{
+    width: 800px;
+}
+
+/*====================================style==========================*/
+body{
+    color: $bodyColor;
+    font: 12px $sansFontFamily;
+    height: 100%;
+}
+
+button{
+    border: none;
+}
+.main-content{
+    width: 1024px;
+    margin: 0 auto;    
+    display: table;
+}
+ul li{ list-style: none}
+a{ text-decoration: none; color:$bodyColor; cursor: pointer;}
+#sidebar a:before, #nav>ul>li a:before,.search-customer:before,
+.list-customer:before, a.remove:before, .b-close, .delete-customer,
+.message ul li em, #footer_left .network-online, #footer_left .network-offline, #left #customer_bar .search-customer{
+    font-family: $font-icon;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.align-left, .a-left{ text-align: left}
+.align-center, .a-center{ text-align: center;}
+.align-right, .a-right{ text-align: right;}
+
+/*======================content=====================================*/
+/*===========form=================*/
+input[type="text"], input[type="email"], input[type="password"], select, input[type="number"]{
+    width: 90%;
+    border: 1px solid $border;
+    @include border-radius(4px);
+    font-size: 14px;
+    color: #aaaaaa;
+    //height: 38px;
+    //line-height: 38px;
+    padding: 10px 8px;
+    background-color: $white; 
+}
+input[type="number"]{
+    width: 90%;
+}
+select.year{
+    width: 128px;
+}
+select.month{ width: 100px; margin-right: 10px;}
+button.scalable{
+    background-color: $color-header;
+    @include border-radius(3px);
+    color: $white;
+    font-size: 14px;
+    font-weight: 700;
+    //width: 73px;
+    height: 24px;
+    padding: 0 11px;
+}
+textarea{
+    border: 1px solid $border;
+    @include border-radius(4px);
+    font-size: 14px;
+    color: #aaaaaa;
+    background-color: $white;
+    padding: 0 8px;
+}
+.wrapper, .middle, #xpos, .xpos-wrapper, #edit_form{ height: 100%}
+#anchor-content > div{ height: 100%}
+.clear{ clear: both;}
+#edit_form{ display: block; height: 100%}
+
+.product-options{ background-color: #fff; padding: 20px;}
+
+
+#content{
+    border-top: 1px solid #d8d8d8;
+    position: relative;
+    z-index: 8;
+    height: 85%;
+    width: 1024px;
+    margin: 0 auto;
+}
+.form-list td.label {
+    width: 200px !important;
+}
+/*=====================sidebar active========================*/
+.wrapper-active{
+    #header .main-content{
+        left: 79px;
+        .search input{ width: 203px;}
+        .option-panel{ right: 99px;}
+    }
+    #content{
+        #center{
+            width: 423px;
+            #product-info li{
+                margin-left: 21px;
+                width: 26%;
+                &:hover, &:active{
+                    width: 25.5%;                    
+                }
+            }
+        }
+        #right{ 
+            width: 423px;
+            #checkout_method_bar div{
+                width: 27.7%;
+            }
+            .block-pay{
+                .amount{ 
+                    padding-left: 13px;
+                    input{
+                        width: 115px;
+                    }
+                }
+                .button-pay{
+                    width: 91px;
+                }
+            }
+            .change .value-change{
+                width: 84px;
+            }
+        }
+        #left{
+            left: 81px;
+            width: 520px;
+        }
+    }
+}
+/*=============================side bar=========================*/
+#config-panel{
+    background-color: $bodybg;
+    height: 95%;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    text-align: center;
+    padding-top: 12px;
+    margin-left: -511px;
+    z-index: 99;        
+    #sidebar{
+        border-right: 2px solid $border;
+        height: 100%;
+        position: relative;
+        ul li{
+            list-style: none;
+            padding-bottom: 26px;
+            a{
+                font-size: 13px;
+                color: $bodyColor;
+                &:before{
+                    display: block;                
+                    font-size: 35px;  
+                }
+                &:hover{
+                    color: #ba0c1a;               
+                }
+            }
+            .report:before{
+                content: "\f080";                    
+            }
+            .order:before{
+                content: "\f0c5";                    
+            }
+            .customers:before{
+                content: "\f007";                    
+            }
+            .staff:before{
+                content: "\f0c0";                    
+            }
+            .admin:before{
+                content: "\f023";                    
+            }
+            .logout:before{
+                content: "\f011";                    
+            }
+            .warehouse:before{
+                content: "\f0e8"; 
+            }
+            &:active a{
+                color: #ba0c1a; 
+            }
+        }
+    }
+    .button-bottom{
+        position: absolute;
+        left: 0;
+        bottom:0; 
+        li{
+            padding-bottom: 13px !important;
+            padding-top: 13px;
+            a{
+                color: $color-header !important;
+                font-size: 12px !important;
+                font-style: italic;
+            }
+            &:first-child{
+                border-bottom: 1px solid $border;
+            }
+        }
+    }
+}
+/*===================li no hover===================*/
+ul li.no-hover{
+    &:hover{
+        &:before{ background-color: #fff !important}
+        a{ color: $bodyColor !important}
+    }
+}
+
+/*=====================================================*/
+.nowrap, .nobr {
+    white-space: nowrap;
+}
+
+#product-info ul {
+    margin: 0 auto;
+    text-align: center;
+}
+.adminhtml-xpos-index #loading-mask{ 
+    color: #D85909;
+    font-size: 1.1em;
+    font-weight: bold;
+    opacity: 0.8;
+    position: absolute;
+    text-align: center;
+    z-index: 500;
+    .loader{
+        background: none repeat scroll 0 0 #f6f6f6;
+        border: 2px solid #BFBFBF;
+        color: #333333;
+        font-weight: bold;
+        left: 50%;
+        margin-left: -105px;
+        padding: 15px 30px;
+        position: fixed;
+        text-align: center;
+        top: 45%;
+        width: 150px;
+        z-index: 1000;
+        i{
+            
+        }
+    }
+}
+#overlay_left{
+    background-color: #f7f7f7;
+    font-size: 1.1em;
+    font-weight: bold;
+    opacity: 0.56;
+    position: absolute;
+    text-align: center;
+    z-index: 500;
+    width: 50%;
+    height: 100%;
+}
+.wrapper-active{
+    #overlay_left{
+        left: 81px;
+        width: 51%;
+    }
+}
+
+#store_information{
+    img{
+        width: 100% !important;
+    }
+}
+/*=================message========================*/
+.message{  
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    ul li{
+        background-color: #dfdfdf;
+        padding: 15px 10px 15px 147px;
+        font-weight: 700;
+        font-size: 15px;
+        position: relative;
+        opacity: 0.95;
+        margin-bottom: 1px;
+        em{
+            height: 24px;
+            width: 24px;
+            vertical-align: middle;
+            background-color: $white;
+            @include border-radius(100%);
+            line-height: 24px;
+            text-align: center;
+            cursor: pointer;
+            position: absolute;
+            left: 20px;
+            top: 11px;                        
+            &:before{
+               content: "\f00d";
+               font-size: 19px;                            
+            }
+        }
+    }
+}
+.validation-advice{
+    color: $color-header;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    #content{
+        height: 86%
+    }
+}
+
+@include tablet {  
+    #content{
+        height: 88%;
+        #left{
+            .customer-search{ height: 95%;}
+            #items_area{ height: 79%;}
+        }
+        #center #product-info{ height: 94%}
+    }
+}
+
+.order-tables {
+  .item-original-price {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
+    border: medium none !important;
+    height: 1px !important;
+    position: fixed !important;
+    width: 1px !important;
+  }
+}

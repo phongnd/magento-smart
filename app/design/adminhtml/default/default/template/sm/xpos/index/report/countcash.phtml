@@ -1,0 +1,158 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Le Nam
+ * Date: 10/21/14
+ * Time: 3:09 PM
+ */
+?>
+<?php
+$deno = Mage::getStoreConfig('xpos/report/denomination');
+$collectionArr = array();
+if($deno == 0){
+
+    $customVal = Mage::getStoreConfig('xpos/report/custom_denomi');
+    $arrayVal = explode(',',$customVal);
+    $i=0;
+    foreach($arrayVal as $index => $denomi){
+        $valueArr = explode(':',$denomi);
+        $collectionObj['deno_name'] = $valueArr[0];
+        $collectionObj['deno_value'] = $valueArr[1];
+        $collectionObj['deno_id'] = $i;
+        $collectionArr[$i] = $collectionObj;
+        $i++;
+    }
+}
+else
+$collection = Mage::getModel('xpos/denomination')->getCollection()
+            ->addFieldToFilter('currency_id',array('eq'=>$deno));
+
+?>
+<style>
+    #count_cash_table td{
+        padding-left: 5px ;
+    }
+    #count_cash_table{
+        padding: 5px;
+    }
+</style>
+
+<table id="count_cash_table">
+    <tr>
+        <td style="width: 50%;font-weight: bold" colspan="2">Denomination</td>
+        <td style="width: 15%;font-weight: bold">Count</td>
+        <td style="width: 15%;font-weight: bold">Sum</td>
+    </tr>
+    <?php if(count($collectionArr) == 0 && count($collection) > 0){
+            foreach($collection as $denomi){
+        ?>
+
+        <tr>
+            <td style="vertical-align: middle;text-align: left"><?php echo $denomi->getData('deno_name'); ?></td>
+            <td style="vertical-align: middle;text-align: left"><?php echo $denomi->getData('deno_value'); ?></td>
+            <td><input style="width: 50%" type="text" value="-" class="count_value manual_cal" id="count_<?php echo $denomi->getData('deno_id'); ?>" denovalue="<?php echo $denomi->getData('deno_value'); ?>" ></td>
+            <td><input style="width: 50%" type="text" value="-" class="sum_value manual_cal count_<?php echo $denomi->getData('deno_id'); ?>" denovalue="<?php echo $denomi->getData('deno_value'); ?>" iddeno="<?php echo $denomi->getData('deno_id'); ?>"></td>
+        </tr>
+
+    <?php }
+    } else{
+
+        foreach($collectionArr as $denomi){
+        ?>
+
+        <tr>
+            <td style="vertical-align: middle;text-align: left"><?php echo $denomi['deno_name']; ?></td>
+            <td style="vertical-align: middle;text-align: left"><?php echo $denomi['deno_value']; ?></td>
+            <td><input style="width: 50%" type="text" value="-" class="count_value manual_cal" id="count_<?php echo $denomi['deno_id']; ?>" denovalue="<?php echo $denomi['deno_value']; ?>" ></td>
+            <td><input style="width: 50%" type="text" value="-" class="sum_value manual_cal count_<?php echo $denomi['deno_id']; ?>" denovalue="<?php echo $denomi['deno_value']; ?>" iddeno="<?php echo $denomi['deno_id']; ?>"></td>
+        </tr>
+    <?php
+    }
+    }
+    ?>
+</table>
+
+<button class="scalable" id="btn_clear" style="padding: 8px 10px 21px;">Clear</button>
+<button class="scalable" id="btn_total" style="margin-left: 20px;padding: 8px 10px 21px;" >Total</button>
+<input type="hidden" value="0" id="total_count" >
+
+
+<script type="text/javascript">
+
+    jQuery('#btn_total').on('click',function(){
+        var total = jQuery('#total_count').val();
+        jQuery('.popup-count-cash').bPopup().close()
+        jQuery('#cashpayment').val(total);
+        jQuery('#cashpayment').focus();
+
+    });
+
+    jQuery('#btn_clear').on('click',function(){
+        jQuery( ".sum_value" ).each(function() {
+            var id_deno = jQuery(this).attr('iddeno');
+            jQuery(this).val('-');
+            jQuery('#count_'+id_deno).val('-');
+        });
+    });
+
+    jQuery('.manual_cal').on('focus',function(){
+        jQuery(this).select();
+    });
+
+    jQuery('.manual_cal').blur(function(){
+        var classes = jQuery(this).attr('class');
+        if(classes.match('count_value')){
+            var deno_value = jQuery(this).attr('denovalue');
+            var count = jQuery(this).val();
+            if(isInt(count)){
+                var total = deno_value * count;
+            }
+            else{
+                jQuery(this).val(0);
+                total = 0;
+            }
+
+            var id_box = jQuery(this).attr('id');
+
+            jQuery('.'+id_box).val(total);
+
+        }
+        if(classes.match('sum_value')){
+            var deno_value = jQuery(this).attr('denovalue');
+            var total = jQuery(this).val();
+            var id_deno = jQuery(this).attr('iddeno');
+            var count = total/deno_value;
+            if(isInt(count)){
+                jQuery('#count_'+id_deno).val(count);
+            }
+            else{
+                jQuery(this).val(0);
+                jQuery('#count_'+id_deno).val(0);
+            }
+
+        }
+        countTotalCash();
+
+    });
+
+    function countTotalCash(){
+        var total = 0;
+        jQuery( ".sum_value" ).each(function() {
+            var this_value = parseFloat(jQuery(this).val());
+            if(isNumber(this_value)){
+                total += this_value;
+            }
+        });
+        jQuery('#total_count').val(parseFloat(total).toFixed(2));
+        jQuery('#btn_total').html('Total '+parseFloat(total).toFixed(2))
+    }
+
+    function isNumber(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
+    function isInt(n) {
+        return n % 1 === 0;
+    }
+
+</script>

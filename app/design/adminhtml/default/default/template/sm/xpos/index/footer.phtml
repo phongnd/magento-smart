@@ -1,0 +1,47 @@
+<div class="main-content">
+    <div id="footer_left">
+        <span id="network-availability" class="network-online" onclick="toggleOfflineMode()"><input type="hidden" id="network-status" value="online"></span>
+        - Staff <span id="cashier_name"><?php echo Mage::getSingleton('admin/session')->getUser()->getName(); ?></span>
+        <?php if (Mage::getStoreConfig('xpos/general/enable_till') == 1) { ?> - Till <span
+            id="till_name">Default</span><?php } ?>
+        <?php if (Mage::helper('xpos')->isWarehouseIntegrate() == 1) { ?> - Warehouse <span
+            id="warehouse_name">Default</span><?php } ?>
+        - Quote ID : <?php echo Mage::getSingleton('adminhtml/sales_order_create')->getQuote()->getId(); ?>
+    </div>
+    <div id="footer_center" style="margin-left: 20px;float:left">
+        <span id="status">Updated 0/0 products</span>
+    </div>
+    <div id="footer_right">
+        <?php echo date("d/m/Y", time()); ?> - <span
+            id="time-live"><?php echo date('g:i', time()); ?></span> <span id="day-time"><?php echo date('A', time()); ?></span></p>
+    </div>
+</div>
+<script>
+
+    jQuery( document ).ready(function() {
+        startTime();
+    });
+
+    function startTime() {
+        var today = new Date();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        jQuery('#day-time').html(ampm);
+
+        h = h % 12;
+        h = h ? h : 12; // the hour '0' should be '12'
+        m = m < 10 ? '0' + m : m;
+
+        jQuery('#time-live').html(h + ":" + m);
+        t = setTimeout(function () {
+            startTime()
+        }, 500);
+
+    }
+
+    flag_reload_page = 1;
+
+</script>

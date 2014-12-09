@@ -1,0 +1,200 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: NguyenCT
+ * Date: 3/28/14
+ * Time: 4:00 PM
+ */
+?>
+<?php
+$categories = Mage::helper('xpos/product')->getCategoryList();
+?>
+
+<div id="product-info">
+    <?php
+        foreach($categories as $cate){
+            //echo "<pre>";
+           // var_dump($cate->getData());die;
+            $xpos_name = $cate->getData('xpos_name');
+
+            if (!$xpos_name){
+                $xpos_name = $cate->getData('name');
+            };
+
+            if($cate->getData('xpos_default')==1){
+                ?>
+    <input type="hidden" id="cate_default" class="cate_default" name="cate_default" value="<?php echo $cate->getData('entity_id')  ?>" />
+    <input type="hidden" id="cate_default_name" class="cate_default_name" name="cate_default_name" value="<?php echo $xpos_name; ?>" />
+    <?php
+            }
+        }
+    ?>
+</div>
+<div id="category-info">
+    <div class="category-selector">
+        <a href="javascript:" id="category-selected" class="show">Select category<i>icon</i></a>
+    </div>
+    <ul id="category-list">
+        <?php foreach($categories as $category):?>
+            <?php
+                $xpos_name = $category->getXposName();
+                if (!$xpos_name){
+                    $xpos_name = $category->getName();
+                }
+                $number_product = Mage::getStoreConfig('xpos/search/number_result');
+                $p1 = Mage::helper('xpos/product')->getCategoryProduct($category,0,$number_product);
+                $p = array_values($p1); // reindex array values
+            ?>
+            <li>
+                <div class="category-wrapper">
+                    <script>
+                        categoryData[<?php echo $category->getId() ;?>] = <?php echo Mage::helper('core')->jsonEncode($p); ?>
+                    </script>
+                    <a href="javascript:" data="category-<?php echo $category->getId()?>" onclick="displayProduct(<?php echo $category->getId(); ?>,0)" class="category">
+                        <span class="name"><?php echo $xpos_name?></span>
+                    </a>
+                </div>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</div>
+<script>
+    //js for config product
+    var BundleControl = Class.create();
+    BundleControl.prototype = {
+        initialize: function (config) {
+            this.config = config;
+        },
+
+        changeSelection: function (selection) {
+            this.reloadPrice();
+            if (selection.multiple) {
+                return;
+            }
+            var parts = selection.id.split('-'), optionId = parts[2],
+                showQtyInput = selection.value && selection.value != 'none',
+                options = this.config.options[optionId],
+                selectionOptions = options && options.selections && options.selections[selection.value] || {};
+
+            selectionOptions.can_change_qty = Number(selectionOptions.can_change_qty) && showQtyInput;
+            this.updateQtyInput(optionId, selectionOptions);
+        },
+
+        reloadPrice: function(){
+            var optionLists = jQuery('#product-option').serializeArray();
+            var price = 0;
+            var config = this.config.options;
+            jQuery.each(optionLists, function(i, item){
+                var optionId = item.name.split(/\[|\]/)[1];
+                var options = config[optionId];
+                var selectionOptions = options && options.selections && options.selections[item.value] || null;
+                if (selectionOptions !=null){
+                    price+=selectionOptions.price;
+                }
+            });
+            optionsPrice.changePrice('bundle', price);
+            optionsPrice.reload();
+            console.log('change '+price);
+        },
+
+        getOption: function(optionLists, bundleOptions){
+            var config = this.config.options;
+            if (bundleOptions!=null){
+                config = bundleOptions;
+            }
+            jQuery.each(optionLists, function(i, item){
+                var optionId = item.name.split(/\[|\]/)[1];
+                var options = config[optionId];
+                var selectionOptions = options && options.selections && options.selections[item.value] || null;
+                if (selectionOptions !=null){
+                    var qty = 1;
+                    var productOption = {};
+                    item.optionTitle = options.title;
+                    item.title = selectionOptions.name;
+                    item.qty = qty;
+                }
+            });
+
+            return optionLists;
+        },
+
+        updateQtyInput: function (optionId, selectionOptions) {
+            var elem = $('bundle-option-' + optionId + '-qty-input'),
+                default_qty = Number(selectionOptions.default_qty);
+            if (!elem) {
+                return;
+            }
+            if (selectionOptions.can_change_qty) {
+                elem.removeClassName('qty-disabled');
+                elem.disabled = false;
+                if (elem.value == '0') {
+                    elem.value = default_qty || 1;
+                }
+            } else {
+                elem.addClassName('qty-disabled');
+                elem.disabled = true;
+                elem.value = default_qty || 0;
+            }
+        },
+
+        updateForDefaults: function () {
+            for (var optionId in this.config.options) {
+                var selection = $('bundle-option-' + optionId);
+                if (selection) {
+                    this.changeSelection(selection);
+                }
+            }
+        }
+    }
+
+    //js for get option from configurable product
+
+    function getConfigurableOption(optionLists, configurableOptions){
+        jQuery.each(optionLists, function(i, item){
+            var optionId = item.name.split(/\[|\]/)[1];
+            var options = configurableOptions[optionId];
+            var selectionOptions = options && options.options || null;
+            if (selectionOptions !=null){
+                for(var i = 0;i<selectionOptions.length;i++){
+                    var t = selectionOptions[i];
+                    if (item.value == t.id){
+                        item.optionTitle = options.label;
+                        item.title = t.label;
+                        item.qty = 1;
+                    }
+                }
+
+            }
+        });
+
+        return optionLists;
+    }
+
+    //js for bundle product
+    function groupProductReloadPrice(productid){
+        var options = jQuery('#product-option').serializeArray();
+        var price = 0;
+        var priceInclTax = 0;
+        jQuery.each(options, function(i, item){
+            var priceChange = jQuery("[qtyid='"+item.name+"']").attr('price');
+            var priceChangeInclTax = jQuery("[qtyid='"+item.name+"']").attr('priceTax');
+            if(!isNaN(priceChange)){
+                price+= parseFloat(priceChange)*item.value;
+                priceInclTax += parseFloat(priceChangeInclTax)*item.value;
+            }
+        });
+        jQuery('#price-excluding-tax-'+productid).text(formatCurrency(price,priceFormat));
+        jQuery('#price-including-tax-'+productid).text(formatCurrency(priceInclTax,priceFormat));
+        console.log('change '+price);
+    }
+
+    function clearOrder(){
+        // reset account information
+        jQuery('#customer_exist_data').html('');
+        setAdd(defaultAddress,false);
+        jQuery('input[name="order[account][type]"][value="guest"]').click();
+        // reset item
+        currentOrder = {};
+        displayOrder(currentOrder,true);
+    }
+</script>

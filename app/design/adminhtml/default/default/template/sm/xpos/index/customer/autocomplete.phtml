@@ -1,0 +1,29 @@
+<ul>
+    <?php foreach ($items as $item){ ?>
+        <li <?php foreach($item as $k=>$v){?> <?php echo $k?>="<?php echo $v?>"<?php } ?>>
+        <?php $name = $item['name'];
+                $length = strlen($name);
+        if($length>27){
+            $newName  = substr($name,0,27);
+            $newName .= '...';
+        }
+        else $newName = $name;
+
+        $email = $item['email'];
+                $length = strlen($email);
+        if($length>17){
+            $newEmail  = substr($email,0,17);
+            $newEmail .= '...';
+        }
+        else $newEmail = $email;
+
+
+        ?>
+            <span style="width: 60%; overflow: hidden; " class="name-customer"><?php echo $this->htmlEscape($newName) ?></span>
+            <span  class="email-customer"><?php echo $newEmail ?></span>
+        </li>
+    <?php } ?>
+    <?php if(count($items) == 0){ ?>
+        <li id="no_result"><span>No matching results</span></li>
+    <?php } ?>
+</ul>

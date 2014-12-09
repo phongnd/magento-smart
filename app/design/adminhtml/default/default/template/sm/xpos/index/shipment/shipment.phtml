@@ -1,0 +1,85 @@
+<?php //if (Mage::getStoreConfig('xpos/general/enable_display_shiping') != 0) { ?>
+
+    <div id="order-shipping-method-choose">
+        <div class="shipment-methods">
+            <?php if ($_shippingRateGroups = $this->getShippingRates()) {
+                $params = $this->getRequest()->getParams();
+                $shippingMethod = '';
+                $check_shipping = 0;
+                if (isset($params['order_id'])) {
+                    $order = Mage::getModel('sales/order')->load($params['order_id']);
+                    $shippingMethod = $order->getShippingMethod();
+                }
+
+                ?>
+                <?php foreach ($_shippingRateGroups as $code => $_rates) { ?>
+                    <div onclick="select_shipping_method('<?php echo $code ?>')" id="s_method_<?php echo $code ?>"
+                         class="shipping-method-item checkout-item <?php if ($_rate = $this->getActiveMethodRate()) {
+                             $_rate = $_rate->getMethod();
+                             if ($code == $_rate) {
+                                 echo "active";
+                             }
+                         } ?>">
+                        <?php foreach ($_rates as $_rate) {
+                            $_code = $_rate->getCode();
+                            ?>
+                            <span
+                                onclick="order.setShippingMethod('<?php echo $_code ?>','<?php echo $_rate->getMethodTitle() ?>')">
+                                <?php echo $this->getCarrierName($code); ?> :
+                                <?php echo $_rate->getMethodTitle() ? $_rate->getMethodTitle() : $_rate->getMethodDescription() ?>
+                                -
+                                <?php $_excl = $this->getShippingPrice($_rate->getPrice(), $this->helper('tax')->displayShippingPriceIncludingTax()); ?>
+                                <?php $_incl = $this->getShippingPrice($_rate->getPrice(), true); ?>
+                                <?php echo $_excl; ?>
+                                <?php if ($this->helper('tax')->displayShippingBothPrices() && $_incl != $_excl): ?>
+                                    (<?php echo $this->__('Incl. Tax'); ?> <?php echo $_incl; ?>)
+                                <?php endif; ?>
+                                </span>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+                <input type="hidden" value="<?php if ($_rate = $this->getActiveMethodRate()) {
+                    echo $_rate->getCode();
+                } ?>" name="order[shipping_method]" id="order_shipping_method_hidden">
+
+
+            <?php } else { ?>
+
+                <div class="shipping-method-item checkout-item active">
+                    <span><?php echo Mage::helper('sales')->__('No Shipping Methods') ?></span>
+                </div>
+
+
+            <?php } ?>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        <?php if ($_shippingRateGroups = $this->getShippingRates()) { ?>
+        jQuery(document).ready(function () {
+            if(jQuery('#order_shipping_method_hidden').val() == ''){
+//                jQuery("#s_method_pickup_shipping").addClass('active');
+//                if (jQuery("#s_method_pickup_shipping").length > 0){
+//                    jQuery("#shipping_detail").html("XPOS");
+//                }
+            }
+        })
+        <?php } ?>
+
+        function select_shipping_method(shipping_code) {
+            jQuery(".shipping-method-item").removeClass('active');
+            jQuery("#s_method_" + shipping_code).addClass('active');
+        }
+        <?php
+            if ($this->getActiveMethodRate()) {
+                $shippingMethod = $this->getActiveMethodRate()->getMethodTitle();
+            } else {
+                $shippingMethod = 'No Shipping';
+            }
+        ?>
+        jQuery("#shipping_detail").html('<?php echo $shippingMethod; ?>');
+    </script>
+
+<?php //} ?>

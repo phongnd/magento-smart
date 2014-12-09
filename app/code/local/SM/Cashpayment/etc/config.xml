@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <SM_Cashpayment>
+            <version>0.1.0</version>
+        </SM_Cashpayment>
+    </modules>
+
+    <global>
+        <blocks>
+            <cashpayment>
+                <class>SM_Cashpayment_Block</class>
+            </cashpayment>
+        </blocks>
+
+        <models>
+            <cashpayment>
+                <class>SM_Cashpayment_Model</class>
+            </cashpayment>
+            <cashpayment_adminhtml>
+                <class>SM_Cashpayment_Adminhtml_Model</class>
+            </cashpayment_adminhtml>
+        </models>
+
+        <resources>
+            <cashpayment_setup>
+                <setup>
+                    <module>SM_Cashpayment</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </cashpayment_setup>
+            <cashpayment_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </cashpayment_write>
+            <cashpayment_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </cashpayment_read>
+        </resources>
+    </global>
+
+    <default>
+        <payment>
+            <cashpayment>
+                <active>0</active>
+                <model>cashpayment/paymentMethod</model>
+                <order_status>pending</order_status>
+                <title>Cash</title>
+                <cctypes>AE,VI,MC,DI</cctypes>
+                <payment_action>authorize</payment_action>
+                <allowspecific>0</allowspecific>
+            </cashpayment>
+        </payment>
+    </default>
+</config>

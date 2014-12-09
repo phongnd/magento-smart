@@ -1,0 +1,369 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Le Nam
+ * Date: 10/15/14
+ * Time: 9:46 AM
+ */
+?>
+
+<?php $data = $this->getPaymentPaidInfo();
+echo "<input type='hidden' name = 'till_current_balance' id='till_current_balance' value='".$data['other_payment']['till_current']."' />";
+     $zreport = $this->getRequest()->getParam('report_type');
+    if(count($data) > 0){
+        if($zreport != 'z-report'){
+            if($data['other_payment']['num_order_total'] == 0 )
+            {
+                echo "<h5 style='margin-top: 40px;margin-left: 50px;font-weight: bold;text-align: center;'> No Data </h5>";
+                return;
+            }
+        }
+        if(count($data) == 1){
+            foreach($data as $other=>$val){
+                if($val['num_order_total'] == 0)
+                    echo "<h5 style='margin-top: 40px;margin-left: 50px;font-weight: bold;text-align: center;'> No Data </h5>";
+                    return;
+            }
+        }
+?>
+<style>
+    #order-xpos_report{
+        padding: 5px;
+    }
+    #report_till thead td{
+        font-weight: bold;
+    }
+    #report_till input{
+        width: 100px;
+        border: 1px solid #496778;
+    }
+    #close_till:hover, #print_x_report:hover,#count_cash:hover{
+        cursor: pointer;
+    }
+    #close_till, #print_x_report{
+        font-weight: bold;
+        background: #0000ff;
+        padding: 5px;
+        color: #ffffff;
+    }
+
+    .align_right{
+        text-align: right;
+    }
+
+</style>
+<table id="report_till">
+    <tr>
+        <td>
+            <table class="till-locaiton till-value">
+                <thead>
+                    <th style="width:25%">Location</th>
+                    <th style="width:20%">Cashier</th>
+                    <th style="width:22%" class="align_right">From</th>
+                    <th style="width:22%" class="align_right">To</th>
+                    <?php if($zreport == 'z-report'){ ?>
+                    <th style="width:15%"></th>
+                    <?php  } ?>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><?php echo $this->getTillName(); ?></td>
+                        <td><span id="report_cashier_name" ></span></td>
+                        <td class="align_right"><?php echo date("Y-m-d H:i:s", Mage::getModel('core/date')->timestamp($data['other_payment']['previous_time'])); ?></td>
+                        <td class="align_right"><?php echo date("Y-m-d H:i:s", Mage::getModel('core/date')->timestamp(time())); ?></td>
+                        <?php if($zreport == 'z-report'){ ?>
+                            <td></td>
+                        <?php  } ?>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="till-value">
+                <thead>
+                    <th>Payment Method</th>
+                    <th>#</th>
+                    <th class="align_right">System</th>
+                    <?php if($zreport == 'z-report'){ ?>
+                    <th class="align_right">Manual</th>
+                    <th class="align_right">Diff</th>
+                    <?php } ?>
+                </thead>
+                <tbody>
+                    <?php
+                        foreach($data as $payment=>$info){
+
+                            if($payment == 'other_payment' && $info['money_system'] == 0){}
+                            else{
+                     ?>
+                    <tr>
+                        <td><?php echo $info['payment_name']; if($payment =='cashpayment'){ echo " - <span id='count_cash' style = 'text-decoration: underline;font-weight: bold;'>Count</span>";
+                            echo "<br>";
+                                echo "(Total: ".number_format($info['total'],2,'.','')." , Transfer: ". number_format($info['previous_transfer'],2,'.','') .", In-Out: ". number_format($info['in_out'],2,'.','') .")";
+                            }  ?></td>
+                        <td><?php echo $info['order_count']; ?></td>
+                        <td class="align_right"><span id="<?php echo $payment.'_money_system' ?>"><?php echo number_format($info['money_system'],2,'.',''); ?></span></td>
+                        <?php if($zreport == 'z-report'){ ?>
+                        <td class="align_right"><input class="manual_cal edit_report_value payment" type="text" value="" name="<?php echo $payment ?>" id="<?php echo $payment ?>" /></td>
+                        <td class="align_right"><span id="<?php echo $payment.'_diff' ?>">0</span></td>
+                        <?php } ?>
+                    </tr>
+                    <?php
+                            }
+                        } ?>
+                    <tr style="border-bottom: 1px solid #0d2131;"></tr>
+                    <?php $discountData = $this->getDiscountPaidInfo(); ?>
+
+                    <tr style="border-bottom: 1px solid #0d2131;"></tr>
+                    <tr class="total">
+                        <td style="padding: 4px">Totals</td>
+                        <td><span id="num_order_total"> <?php  echo $data['other_payment']['num_order_total']?></span></td>
+                        <td class="align_right"><span id="grand_system"><?php  echo  number_format($data['other_payment']['grand_order_total'],2,'.','') ?></span></td>
+                        <?php if($zreport == 'z-report'){ ?>
+                        <td class="align_right"><span class="edit_report_value totals"  id="total_value_report" ></span></td>
+                        <td class="align_right"><span id="total_value_diff">0</span></td>
+                        <?php } ?>
+                    </tr>
+                    <?php  if( Mage::getEdition()=="Enterprise"){ ?>
+                    <tr class="total">
+                        <td style="padding: 4px">Vouchers</td>
+                        <td><?php echo $discountData['voucher_orders'] ?></td>
+                        <td class="align_right"><span id="discount_system"><?php if($discountData['voucher'] < 0) echo number_format(-$discountData['voucher'],2,'.',''); else echo number_format($discountData['voucher'],2,'.','')  ?></span> </td>
+                        <?php if($zreport == 'z-report'){ ?>
+                            <td class="align_right"><span class="edit_report_value discount" name="discount_value_report" id="discount_value_report" ><?php if($discountData['voucher'] < 0) echo number_format(-$discountData['voucher'],2,'.',''); else echo number_format($discountData['voucher'],2,'.','');  ?></span></td>
+                            <td class="align_right"><span id="discount_value_diff"></span></td>
+                        <?php } ?>
+                    </tr>
+
+                    <?php } ?>
+                    <tr class="total">
+                        <td style="padding: 4px">Discount</td>
+                        <td><?php echo $discountData['order_count'] ?></td>
+                        <td class="align_right"><span id="discount_system"><?php if($discountData['discount_amount'] < 0) echo number_format(-$discountData['discount_amount'],2,'.',''); else echo number_format($discountData['discount_amount'],2,'.','')  ?></span> </td>
+                        <?php if($zreport == 'z-report'){ ?>
+                        <td class="align_right"><span class="edit_report_value discount" name="discount_value_report" id="discount_value_report" ><?php if($discountData['discount_amount'] < 0) echo number_format(-$discountData['discount_amount'],2,'.',''); else echo number_format($discountData['discount_amount'],2,'.','');  ?></span></td>
+                        <td class="align_right"><span id="discount_value_diff"></span></td>
+                        <?php } ?>
+                    </tr>
+                    <tr class="total">
+                        <td style="padding: 4px">Tax Amount</td>
+                        <td></td>
+                        <td class="align_right"><span id="tax_system"><?php echo number_format($data['other_payment']['tax_order_total'],2,'.',''); ?></span></td>
+                        <?php if($zreport == 'z-report'){ ?>
+                        <td class="align_right"><span class="edit_report_value tax"  name="tax_value_report" id="tax_value_report" ><?php echo number_format( $data['other_payment']['tax_order_total'],2,'.',''); ?></span></td>
+                        <td class="align_right"><span id="tax_value_diff"></span></td>
+                        <?php } ?>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+</table>
+<div class="action">
+    <?php if($zreport == 'z-report'){ ?>
+    <div class="block-left">
+        <div class="transfer">
+            <label>Transfer to Cash Drawer</label>
+            <input type="text" class="manual_cal cash_report" name="cash_report" id="cash_report" value="<?php echo Mage::getStoreConfig('xpos/report/default_transfer') ?>" />
+        </div>
+        <div class="btn-close"><button style="padding: 8px 4px 21px;" id="close_till" class="scalable" >CLOSE TILL</button></div>
+    </div>
+    <?php }else{ ?>
+        <div class="btn-print">
+            <button  id="print_x_report" class="scalable" >PRINT REPORT</button>
+        </div>
+    <?php  } ?>
+</div>
+<?php } ?>
+
+<script>
+    jQuery( document ).ready(function() {
+        jQuery('#total_value_report').html(0);
+        jQuery('#report_cashier_name').html(jQuery('#cashier_name').text());
+    });
+
+    jQuery('#count_cash').on('click',function(){
+        order.loadArea(['count_cash'],true);
+        jQuery('.popup-count-cash').bPopup({
+            modalClose: true,
+            opacity: 0.6,
+            speed: 450,
+            transition: 'slideIn',
+            positionStyle: 'fixed' //'fixed' or 'absolute'
+        });
+    });
+
+    jQuery('#print_x_report').on('click',function(){
+        print_zreport('x-report',0,0);
+    });
+
+    jQuery('#close_till').on('click',function(){
+        var checkInput = true;
+        jQuery( ".payment" ).each(function() {
+            var amount_count = jQuery(this).val();
+            if(!isNumber(amount_count)){
+                alert('Enter Count Value !');
+                checkInput = false;
+                return false;
+            }
+        });
+        if(checkInput){
+            //save transfer
+            var transfer = parseFloat(jQuery('#cash_report').val()).toFixed(2);
+            if(!isNumber(transfer)){
+                alert('Enter Amount Transfer !');
+                return false;
+            }
+            if(transfer != 0 && isNumber(transfer)){
+                var till_current_balance = parseFloat(jQuery('#till_current_balance').val());
+                if(isNumber(till_current_balance)){
+                    jQuery("#transaction_amount").val(till_current_balance);
+                    jQuery("#transaction_type").val('out');
+                    jQuery("#transaction_note").val('Close Till');
+
+                    jQuery('#set_transac_flag').val(1);
+                    jQuery('#transfer_val').val(transfer);
+                    newTransaction();
+                }
+            }
+            else transfer =0;
+
+            //save z-report
+            var cashier_id = jQuery('#xpos_user_id').val();
+            var tax_amount = parseFloat(jQuery('#tax_system').text());
+            var discount_amount = parseFloat(jQuery('#discount_system').text());
+            var cash_system = parseFloat(jQuery('#cashpayment_money_system').text());
+            var cash_count = parseFloat(jQuery('#cashpayment').val());
+            var check_system = parseFloat(jQuery('#checkmo_money_system').text());
+            var check_count = parseFloat(jQuery('#checkmo').val());
+            var cc_system = parseFloat(jQuery('#ccsave_money_system').text());
+            var cc_count = parseFloat(jQuery('#ccsave').val());
+            var other_system = parseFloat(jQuery('#other_payment_money_system').text());
+            var other_count = parseFloat(jQuery('#other_payment').val());
+            jQuery.ajax({
+                type: "GET",
+                dataType: "json",
+                url: "<?php echo Mage::helper("adminhtml")->getUrl('*/report/saveZReport');?>",
+                data: {
+                    order_total: jQuery('#num_order_total').text(),
+                    amount_total: jQuery('#grand_system').text(),
+                    till_id: jQuery("#till_id").val(),
+                    cashier_id : cashier_id,
+                    transfer_amount : transfer,
+                    tax_amount :tax_amount,
+                    discount_amount :discount_amount,
+                    cash_system : cash_system,
+                    cash_count :cash_count,
+                    check_system :check_system,
+                    check_count :check_count,
+                    cc_system :cc_system,
+                    cc_count : cc_count,
+                    other_system:other_system,
+                    other_count:other_count
+
+                }
+            }).done(function (data) {
+
+
+            })
+            .fail(function (data) {
+                jQuery("#ajax_loading").html('');
+                jQuery("#transaction_not_saved").text("Can NOT save this report ").show().fadeOut(10000);
+            });
+
+
+            jQuery('.popup-xpos-report').bPopup().close();
+            xposReportLoaded = false;
+            //print report
+            var diff_total = parseFloat(jQuery('#total_value_diff').text()).toFixed(2);
+            print_zreport('z-report',transfer,diff_total);
+        }
+    });
+
+    function calTotalManual(){
+        var sum=0;
+        if(jQuery('#other_payment').val() != "" && jQuery('#checkmo').val() != "" && jQuery('#cashpayment').val() != ""){
+            var other_payment = parseFloat(jQuery('#other_payment').val());
+            var checkmo = parseFloat(jQuery('#checkmo').val());
+            var cashpayment = parseFloat(jQuery('#cashpayment').val());
+            var ccsave = parseFloat(jQuery('#ccsave').val());
+            if(isNumber(other_payment))
+                sum += other_payment;
+            if(isNumber(checkmo))
+                sum += checkmo;
+            if(isNumber(cashpayment))
+                sum += cashpayment;
+            if(isNumber(ccsave))
+                sum += ccsave;
+            if(other_payment != "NaN" && checkmo != "NaN" && cashpayment != "NaN" && ccsave != "NaN")
+                jQuery('#total_value_report').html(sum.toFixed(2));
+            //sum diff
+            var other_payment_diff = parseFloat(jQuery('#other_payment_diff').text());
+            var checkmo_diff = parseFloat(jQuery('#checkmo_diff').text());
+            var cashpayment_diff = parseFloat(jQuery('#cashpayment_diff').text());
+            var ccsave_diff = parseFloat(jQuery('#ccsave_diff').text());
+            var sum1 =0;
+            if(isNumber(other_payment_diff))
+                sum1 += other_payment_diff;
+            if(isNumber(checkmo_diff))
+                sum1 += checkmo_diff;
+            if(isNumber(cashpayment_diff))
+                sum1 += cashpayment_diff;
+            if(isNumber(ccsave_diff))
+                sum1 += ccsave_diff;
+          //  if(value3 != "NaN" && value4 != "NaN" && value5 != "NaN")
+                jQuery('#total_value_diff').html(sum1.toFixed(2));
+        }
+
+    }
+
+    jQuery('.edit_report_value').blur(function(){
+        var class_element  = jQuery(this).attr('class');
+        var text = jQuery(this).val();
+        if(text != ""){
+            var number = parseFloat(text);
+            if(isNumber(number))
+                jQuery(this).val(number.toFixed(2));
+            if(class_element.match('payment')){
+                var name = jQuery(this).attr('id');
+                var id_sys = name + "_money_system";
+                var manual_val = parseFloat(jQuery('#'+name).val());
+                var system_val = parseFloat(jQuery('#'+id_sys).text());
+                var diff_value = parseFloat(manual_val - system_val  ).toFixed(2);
+                jQuery('#'+name+'_diff').html(diff_value);
+                calTotalManual();
+            }
+        }
+
+    });
+
+    jQuery('body').on("keydown",'.manual_cal',function(event){
+
+        if (event.shiftKey == true) {
+            // event.preventDefault(); allow to enter % char
+        }
+
+        if ((event.keyCode >= 48 && event.keyCode <= 57) ||
+            (event.keyCode >= 96 && event.keyCode <= 105) ||
+            event.keyCode ==16 ||
+            event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 37 ||
+            event.keyCode == 39 || event.keyCode == 46 || event.keyCode == 190 || event.keyCode == 110 || event.keyCode == 188) {
+
+        } else {
+            event.preventDefault();
+        }
+
+        if((jQuery(this).val().indexOf('.') !== -1 || jQuery(this).val().indexOf(',') !== -1) && event.keyCode == 190)
+            event.preventDefault();
+
+        if((jQuery(this).val().indexOf(',') !== -1 || jQuery(this).val().indexOf('.') !== -1 ) && event.keyCode == 188)
+            event.preventDefault();
+
+        if((jQuery(this).val().indexOf(',') !== -1 || jQuery(this).val().indexOf('.') !== -1 ) && event.keyCode == 110)
+            event.preventDefault();
+
+    });
+
+</script>

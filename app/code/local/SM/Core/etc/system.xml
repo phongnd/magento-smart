@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+	<tabs>
+        <sm_ext_config translate="label" module="smcore">
+            <label>SmartOSC extensions</label>
+            <sort_order>301</sort_order>
+        </sm_ext_config>
+    </tabs>
+</config> 

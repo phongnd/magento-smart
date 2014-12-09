@@ -1,0 +1,38 @@
+#footer{
+	background-color: $bodyColor;
+	color: $white;
+	font-size: 11px;	
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	left: 0;
+	height: 3%;
+	z-index: 99;
+	min-height: 20px;
+	line-height: 20px;
+	#main-content{
+		padding: 3px 0;
+	}
+	#footer_left{
+		float: left;
+		padding-left: 12px;
+		.network-online{
+			&:before{
+				content: "\f0c1"; 
+			}
+			cursor: pointer;
+		}
+		.network-offline{
+			&:before{
+				content: "\f127"; 
+				color: $color-header;
+			}
+			cursor: pointer;
+		}
+	}
+	#footer_right{
+		float: right;
+		padding-right: 12px;
+	}
+	#footer_center{ float: left;}
+}

@@ -1,0 +1,74 @@
+<?php $data_till = $this->loadTill(); ?>
+
+<div id="till_popup" class="popup">
+    <div class="panel_block" id="till-chooser">
+        <h4>Choose till</h4>
+        <ul id="till_list">
+        <?php if (count($data_till) > 0) { ?>
+                <?php foreach($data_till as $till){ ?>
+                    <li><a onclick="setTill('<?php echo $till->getTillId() ?>','<?php echo $till->getTillName(); ?>')" href="javascript:"><?php echo $till->getTillName() ?></a></li>
+                <?php } ?>
+
+        <?php } else { ?>
+            <li><span class="no-till no-hover">Please add, or enable till for this category</span></li>
+        <?php } ?>
+        </ul>
+    </div>
+</div>
+
+<script>
+
+    jQuery(document).ready(function() {
+        var isTillEnable = <?php echo Mage::getStoreConfig('xpos/general/enable_till'); ?>;
+
+        if(isTillEnable == 1 && $.jStorage.get('xpos_till') != null){
+            jQuery('#till_name').html($.jStorage.get('xpos_till').till_name);
+            jQuery('#till_id').val($.jStorage.get('xpos_till').till_id);
+            order.tillId = jQuery('#till_id').val();
+        }
+    });
+
+    function show_popup_till() {
+        var isTillEnable = <?php echo Mage::getStoreConfig('xpos/general/enable_till'); ?>;
+
+        if (isTillEnable == 0) {
+            $.jStorage.deleteKey('xpos_till');
+        }
+
+        if (isTillEnable == 1 && $.jStorage.get('xpos_till') == null) {
+            jQuery('#till_popup').bPopup({
+                modalClose: false,
+                escClose: false,
+                opacity: 0.6,
+                speed: 450,
+                transition: 'slideBack',
+                positionStyle: 'fixed' //'fixed' or 'absolute'
+            });
+        } else {
+            if ($.jStorage.get('xpos_till') != null) {
+
+            }
+        }
+    }
+
+    function setTill(id,name) {
+
+        jQuery('#till_name').html(name);
+        var xpos_till = {
+            till_id : id,
+            till_name : name
+        }
+        $.jStorage.set('xpos_till',xpos_till);
+        jQuery('#till_id').val(id);
+        jQuery('#till_popup').bPopup().close();
+        order.tillId = id;
+    }
+
+    function xpos_change_till(){
+        transactionMoneyLoaded = false;
+        jQuery('#till_name').html("Default");
+        $.jStorage.deleteKey('xpos_till');
+        show_popup_till();
+    }
+
+</script>

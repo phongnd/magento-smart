@@ -1,0 +1,61 @@
+<?php if ($this->includeTax() && $this->getTotalExclTax() >= 0): ?>
+    <tr>
+        <td style="<?php echo $this->getStyle() ?>" class="a-right" colspan="<?php echo $this->getColspan(); ?>">
+            <strong><?php echo $this->helper('tax')->__('Grand Total Excl. Tax') ?></strong>
+        </td>
+        <td style="<?php echo $this->getStyle() ?>" class="a-right">
+            <strong><?php echo $this->formatPrice($this->getTotalExclTax()) ?></strong>
+        </td>
+    </tr>
+    <?php echo $this->renderTotals('taxes', $this->getColspan()); ?>
+    <tr>
+        <td style="<?php echo $this->getStyle() ?>" class="a-right" colspan="<?php echo $this->getColspan(); ?>">
+            <strong><?php echo $this->helper('tax')->__('Grand Total Incl. Tax') ?></strong>
+        </td>
+        <td style="<?php echo $this->getStyle() ?>" class="a-right">
+            <strong><?php echo $this->formatPrice($this->getTotal()->getValue()) ?></strong>
+        </td>
+    </tr>
+<?php else: ?>
+    <tr>
+        <td style="<?php echo $this->getStyle() ?>" class="a-right" colspan="<?php echo $this->getColspan(); ?>">
+            <strong><?php echo $this->getTotal()->getTitle() ?></strong>
+        </td>
+        <td style="<?php echo $this->getStyle() ?>" class="a-right">
+            <strong><?php echo $this->formatPrice($this->getTotal()->getValue()) ?></strong>
+        </td>
+    </tr>
+<?php endif; ?>
+<tr>
+    <td class="a-right">
+        <label for="cash-in"><?php echo $this->__("Total paid"); ?></label>
+    </td>
+    <td class="a-right">
+        <input type="text" class="input-text" id="cash-in" name="cash-in"
+               value="<?php echo $this->getRequest()->getPost('cash-in'); ?>"/>
+    </td>
+</tr>
+<tr>
+    <td class="a-right">
+        <label for="custom-discount"><?php echo $this->__("Discounts"); ?></label>
+    </td>
+    <td class="a-right">
+        <input type="text" class="input-text" id="custom-discount" name="custom-discount"
+               value="<?php echo $this->getRequest()->getPost('custom-discount'); ?>"/>
+    </td>
+</tr>
+<?php
+$balance = floatval($this->getRequest()->getPost('cash-in')) - $this->getTotal()->getValue() + floatval($this->getRequest()->getPost('custom-discount'));
+?>
+<tr class="balance">
+    <td class="a-right"><label for="balance"><?php echo $this->__("Balance"); ?></label></td>
+    <td class="a-right"
+        id="balance-content"><?php echo Mage::getSingleton('adminhtml/session_quote')->getStore()->formatPrice($balance); ?></td>
+</tr>
+<tr>
+    <td colspan="2" id="balance_hidden"><input type="hidden" name="balance" id="balance"
+                                               value="<?php echo $balance; ?>"/>
+        <input type="hidden" name="discount_ids" id="discount_ids" value="<?php echo $balance; ?>"/>
+        <input type="hidden" name="old_discount_ids" id="old_discount_ids" value="<?php echo $balance; ?>"/>
+    </td>
+</tr>

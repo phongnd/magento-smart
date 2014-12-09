@@ -1,0 +1,217 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Le Nam
+ * Date: 10/17/14
+ * Time: 2:32 PM
+ */
+?>
+<?php
+        $transfered = number_format($this->getRequest()->getParam('transfer_amout'),2,'.','');
+        $diff_total = number_format($this->getRequest()->getParam('diff_total'),2,'.','');
+        $cash_count = number_format($this->getRequest()->getParam('cash_count'),2,'.','');
+        $check_count = number_format($this->getRequest()->getParam('check_count'),2,'.','');
+        $cc_count = number_format($this->getRequest()->getParam('cc_count'),2,'.','');
+        $other_count = number_format($this->getRequest()->getParam('other_count'),2,'.','');
+        $report_type = $this->getRequest()->getParam('report_type');
+
+
+        $paymentInfo  = Mage::getSingleton('adminhtml/session')->getPaymentInfo();
+        $transfer = number_format($paymentInfo['cashpayment']['previous_transfer'],2,'.','');
+        $discountInfo = Mage::getSingleton('adminhtml/session')->getDiscountInfo();
+        if(Mage::getStoreConfig('xpos/general/enable_till') == 1){
+            $till_id =  Mage::getSingleton('adminhtml/session')->getTillInfo();
+            $tillName = Mage::getModel('xpos/till')->load($till_id)->getData('till_name');
+        }
+        if(Mage::getStoreConfig('xpos/general/integrate_xmwh_enabled')){
+            $warehouse_id = Mage::getSingleton('admin/session')->getWarehouseId();
+//            $warehouse_id = Mage::getSingleton('adminhtml/session')->getWarehouseReport();
+            $warehouse = Mage::getModel('xwarehouse/warehouse')->load($warehouse_id)->getData('label');
+        }
+        if(Mage::getStoreConfig('xpos/general/enabled_cashier') == 1){
+            $cashier_name = $this->getRequest()->getParam('cashier_name');
+//            $cashier_id = Mage::getSingleton('adminhtml/session')->getCashierReport();
+//            $firstname = Mage::getModel('xpos/user')->load($cashier_id)->getData('firstname');
+//            $lastname = Mage::getModel('xpos/user')->load($cashier_id)->getData('lastname');
+//            $name = $firstname." ".$lastname;
+        }
+
+?>
+<style>
+    #wrapper table td{
+        padding: 5px;
+    }
+    #wrapper table .align_right{
+        text-align: right;
+    }
+</style>
+<div id="wrapper">
+    <div id="header">
+        <h4><?php  if($till_id) echo $tillName.' '; ?> - <?php if($report_type == 'z-report') echo 'End of Day Report'; else echo 'Quick Report'; ?></h4>
+        <table>
+            <?php if($warehouse){ ?>
+            <tr>
+                <td style="font-weight: bold;">Warehouse</td>
+                <td><?php if($warehouse) echo $warehouse ?></td>
+            </tr>
+            <?php } ?>
+            <?php if($till_id){ ?>
+            <tr>
+                <td style="font-weight: bold;">Till</td>
+                <td><?php echo $tillName ?></td>
+            </tr>
+            <?php } ?>
+            <?php if($cashier_id){ ?>
+            <tr>
+                <td style="font-weight: bold;">Cashier</td>
+                <td><?php echo $cashier_name ?></td>
+            </tr>
+            <?php } ?>
+            <tr>
+                <td style="font-weight: bold;">Period</td>
+                <td><?php echo date("Y-m-d H:i:s", Mage::getModel('core/date')->timestamp($paymentInfo['other_payment']['previous_time'])); ?></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><?php echo date("Y-m-d H:i:s", Mage::getModel('core/date')->timestamp(time())); ?></td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">Orders</td>
+                <td><?php echo $paymentInfo['other_payment']['num_order_total'] ?></td>
+            </tr>
+        </table>
+    </div>
+    <div id="content">
+            <table>
+                <tr>
+                    <td style="font-weight: bold;">Payment Method</td>
+                    <td style="font-weight: bold;">System</td>
+                    <?php if($report_type == 'z-report'){ ?>
+                    <td style="font-weight: bold;">Count</td>
+                    <?php } ?>
+                </tr>
+                <tr><td colspan="3" style="border-bottom: 1px solid #496778;"></td></tr>
+                <?php if($paymentInfo)
+                    foreach($paymentInfo as $name=>$payment){
+                        if($payment['money_system'] != 0){
+                ?>
+                <tr>
+                    <td><?php echo $payment['payment_name'] ?></td>
+                    <td class="align_right"><?php echo number_format($payment['money_system'],2,'.',''); ?></td>
+                    <?php if($report_type == 'z-report'){ ?>
+                    <td class="align_right"><?php
+                        switch($name){
+                            case 'cashpayment':
+                                echo number_format($cash_count,2,'.','');
+                                break;
+                            case 'checkmo':
+                                echo number_format($check_count,2,'.','');
+                                break;
+                            case 'ccsave':
+                                echo number_format($cc_count,2,'.','');
+                                break;
+                            case 'other_payment':
+                                echo number_format($other_count,2,'.','');
+                                break;
+                        }
+                    ?></td>
+                    <?php
+                            }
+                    } ?>
+                </tr>
+                <?php } ?>
+                <tr>
+                    <td><span style="font-weight: bold;">Included</span></td>
+                </tr>
+                <tr><td colspan="3" style="border-bottom: 1px solid #496778;"></td></tr>
+                <tr>
+                    <td>Till amount</td>
+                    <td class="align_right"><?php echo number_format($transfer,2,'.','') ?></td>
+                    <?php if($report_type == 'z-report'){ ?>
+                        <td class="align_right"><?php echo number_format($transfer,2,'.','') ?></td>
+                    <?php } ?>
+                </tr>
+
+                <tr>
+                    <td><span style="font-weight: bold;">Not Included</span></td>
+                </tr>
+                <tr><td colspan="3" style="border-bottom: 1px solid #496778;"></td></tr>
+                <?php if($discountInfo){ ?>
+                <tr>
+                    <td>Discount</td>
+                    <td class="align_right"><?php if($discountInfo['discount_amount'] > 0 ) echo number_format($discountInfo['discount_amount'],2,'.',''); else echo number_format(-$discountInfo['discount_amount'],2,'.','') ?></td>
+                    <?php if($report_type == 'z-report'){ ?>
+                    <td class="align_right"><?php if($discountInfo['discount_amount'] > 0 ) echo number_format($discountInfo['discount_amount'],2,'.',''); else echo number_format(-$discountInfo['discount_amount'],2,'.','') ?></td>
+                    <?php } ?>
+                </tr>
+                <?php }else{ ?>
+                    <tr>
+                        <td>Discount</td>
+                        <td class="align_right"><?php echo number_format(0,2,'.','');?></td>
+                        <?php if($report_type == 'z-report'){ ?>
+                            <td class="align_right"><?php echo number_format(0,2,'.',''); ?></td>
+                        <?php } ?>
+                    </tr>
+                <?php }?>
+                <?php  if( Mage::getEdition()=="Enterprise"){ ?>
+                    <tr>
+                        <td>Vouchers</td>
+                        <td class="align_right"><?php if($discountInfo['voucher'] > 0 ) echo number_format($discountInfo['voucher'],2,'.',''); else echo number_format(-$discountInfo['voucher'],2,'.','') ?></td>
+                        <?php if($report_type == 'z-report'){ ?>
+                            <td class="align_right"><?php if($discountInfo['discount_amount'] > 0 ) echo number_format($discountInfo['voucher'],2,'.',''); else echo number_format(-$discountInfo['voucher'],2,'.','') ?></td>
+                        <?php } ?>
+                    </tr>
+                <?php } ?>
+                <?php if($paymentInfo){ ?>
+                <tr>
+                    <td>Refunds</td>
+                    <td class="align_right"><?php echo number_format($paymentInfo['other_payment']['total_refund'],2,'.','')  ?></td>
+                    <?php if($report_type == 'z-report'){ ?>
+                    <td class="align_right"><?php echo number_format($paymentInfo['other_payment']['total_refund'],2,'.','') ?></td>
+                    <?php } ?>
+                </tr>
+                <?php } ?>
+
+             <tr>
+                 <td><span style="font-weight: bold;">Summary</span></td>
+             </tr>
+                <tr><td colspan="3" style="border-bottom: 1px solid #496778;"></td></tr>
+            <tr>
+                <td>Total (Incl Tax)</td>
+                <td class="align_right"><?php echo number_format($paymentInfo['other_payment']['grand_order_total'],2,'.','') ?></td>
+                <?php if($report_type == 'z-report'){ ?>
+                <td class="align_right"><?php echo number_format($paymentInfo['other_payment']['grand_order_total'],2,'.','') ?></td>
+                <?php } ?>
+            </tr>
+            <tr>
+                <td>Tax Amount</td>
+                <td class="align_right"><?php echo number_format($paymentInfo['other_payment']['tax_order_total'],2,'.','') ?></td>
+                <?php if($report_type == 'z-report'){ ?>
+                <td class="align_right"><?php echo number_format($paymentInfo['other_payment']['tax_order_total'],2,'.','') ?></td>
+                <?php } ?>
+            </tr>
+                <?php if($report_type == 'z-report'){ ?>
+            <tr>
+                <td>Difference</td>
+                <td></td>
+                <td class="align_right"><?php echo $diff_total ?></td>
+            </tr>
+            <tr>
+                <td colspan="2">Transfered to Cash Drawer</td>
+                <td class="align_right"><?php echo $transfered  ?></td>
+            </tr>
+
+                <?php  } ?>
+        </table>
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    document.observe("dom:loaded", function () {
+        window.print();
+        window.onfocus = function () {
+            window.close();
+        }
+    });
+</script>

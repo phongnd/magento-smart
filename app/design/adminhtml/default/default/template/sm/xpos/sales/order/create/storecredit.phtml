@@ -1,0 +1,70 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: NamLX
+ * Date: 10/10/14
+ * Time: 3:35 PM
+ */
+/**
+ * @see Enterprise_CustomerBalance_Block_Checkout_Onepage_Payment_Additional
+ */
+
+?>
+<?php if (true): ?>
+
+    <div class="checkout-item no-hover" xmlns="http://www.w3.org/1999/html">
+        <div class="entry-edit">
+            <div id="group-coupon-code-heading" class="entry-edit-head">
+                <h4 id="group-coupon-code-h4" class="icon-head"><?php echo $this->__('Store Credit'); ?></h4>
+                <span class="ui-icon-off-coupon"></span>
+            </div>
+            <fieldset class="np content">
+                <div id="group-coupon-code-content" class="content">
+                    <p style="margin-left: 30px;"><span style="max-width: 200px;font-size: 15px;"> <?php echo $this->__(' %s Store Credit available', $this->formatPrice($this->getBalance())) ?></span>
+                        <input type="hidden" id="store_credit_balance" value="<?php echo $this->getBalance(); ?>" >
+
+                        <button onclick="toggleUseCustomerBalance(); " type="button" value="" class="scalable"><span><span><span id="button_store_credit"><?php echo $this->__('Apply'); ?></span></span></span></button>
+                        <input style="display: none;" id="p_method_use_customerbalance" value="1" name="payment[use_customer_balance]" type="checkbox" title="<?php echo $this->__('Store Credit') ?>" onclick="" <?php if ($this->getUseCustomerBalance()): ?>checked<?php endif; ?> />
+                    </p>
+                    <?php foreach ($this->getGiftCards() as $_card): ?>
+                        <p style="margin-top: 5px;"><input readonly id="giftcardaccount_add_input" type="text" class="input-text" value="<?php echo $_card; ?>" style="width:200px;padding: 4px 8px" /> <button  type="button" value="" class="scalable" onclick="removeGiftCard('<?php echo $_card; ?>',this); return false;" title="<?php echo $this->__('Remove'); ?>"><?php echo $this->__('Remove'); ?></button></p>
+                    <?php endforeach; ?>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+     <script type="text/javascript">
+         jQuery(document).ready(function(){
+             if(jQuery('#store_credit_use').val() !=1 ){
+                 jQuery('#button_store_credit').html("Apply");
+             }
+             else{
+                 jQuery('#button_store_credit').html("Remove");
+             }
+         });
+        function toggleUseCustomerBalance()
+        {
+            if(jQuery('#store_credit_use').val() !=1 ){
+                //jQuery('#store_credit_use').attr("checked",true);
+                jQuery('#store_credit_use').val(1);
+                jQuery('#button_store_credit').html("Remove");
+                var value =1;
+            }
+            else{
+                jQuery('#store_credit_use').val(0);
+                //jQuery('#store_credit_use').attr("checked",false);
+                jQuery('#button_store_credit').html("Apply");
+                var value = 0;
+            }
+
+            //var value = (jQuery('#p_method_use_customerbalance').checked ? 1 : 0);
+            var data = {};
+            data['payment[use_customer_balance]'] = value;
+
+            order.loadArea(['totals', 'billing_method', 'storecredit'], true, data);
+        }
+        //Event.observe(jQuery('#p_method_use_customerbalance'), 'click', toggleUseCustomerBalance);
+        //Event.observe(document, 'dom:loaded', toggleUseCustomerBalance);
+    </script>
+<?php endif; ?>

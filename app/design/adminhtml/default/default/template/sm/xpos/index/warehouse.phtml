@@ -1,0 +1,108 @@
+<?php
+if (Mage::helper('xpos')->isWarehouseIntegrate() == 1) {
+
+    $data_warehouse = $this->loadWarehouse();
+    ?>
+
+    <div id="warehouse_popup" class="popup">
+        <div class="panel_block" id="warehouse-chooser">
+            <h4>Choose warehouse <img id="indicator_warehouse" src="<?php echo $this->getSkinUrl('sm/xpos/images/ajax-loader.gif') ?>" style="display: none;"></h4>
+            <ul>
+                <?php if (count($data_warehouse) > 0) { ?>
+                    <?php foreach ($data_warehouse as $warehouse) {
+                        ?>
+                        <li>
+                            <a onclick="setWarehouse('<?php echo $warehouse->getData('warehouse_id') ?>','<?php echo $warehouse->getLabel(); ?>')"
+                               href="javascript:"><?php echo $warehouse->getLabel() ?></a></li>
+                    <?php } ?>
+
+                <?php } else { ?>
+                    <li><span class="no-warehouse no-hover">Please add, or enable a warehouse</span></li>
+                <?php } ?>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+
+        jQuery(document).ready(function () {
+            var warehouse = $.jStorage.get('xpos_warehouse');
+            if (warehouse != null) {
+                jQuery('#warehouse_name').html(warehouse.warehouse_name);
+                getData();
+            }
+
+        });
+
+        var is_progress_set_warehouse = 0;
+
+        function show_popup_warehouse() {
+
+            if ($.jStorage.get('xpos_warehouse') == null) {
+                jQuery('#warehouse_popup').bPopup({
+                    modalClose: false,
+                    escClose: false,
+                    opacity: 0.6,
+                    speed: 450,
+                    transition: 'slideBack',
+                    positionStyle: 'fixed' //'fixed' or 'absolute'
+                });
+            } else {
+                show_popup_till();
+            }
+        }
+
+        function setWarehouse(id, name) {
+
+            if(is_progress_set_warehouse == 1){
+                return false;
+            }
+
+            jQuery('#warehouse_name').html(name);
+            jQuery('#indicator_warehouse').show();
+            var xpos_warehouse = {
+                warehouse_id: id,
+                warehouse_name: name
+            }
+            $.jStorage.set('xpos_warehouse', xpos_warehouse);
+            getData();
+
+            is_progress_set_warehouse = 1;
+
+            networkCheck = jQuery.ajax({
+                type: 'GET',
+                url: '<?php echo $this->getUrl('adminhtml/till/setWarehouse') ?>',
+                data: {warehouse_id: id},
+                timeout: 30000,
+                success: function (data) {
+                    jQuery('#till_list  ').html(data);
+                    jQuery('#warehouse_popup').bPopup().close();
+                    jQuery('#indicator_warehouse').hide();
+                    jQuery('#warehouse-chooser a').removeAttr('disabled');
+                    show_popup_till();
+                    is_progress_set_warehouse = 0;
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    is_progress_set_warehouse = 0;
+                }
+            });
+        }
+
+        function xpos_change_warehouse() {
+            jQuery('#warehouse_name').html("Default");
+            $.jStorage.deleteKey('xpos_warehouse');
+            $.jStorage.deleteKey('xpos_till');
+            $.jStorage.deleteKey('productData');
+            show_popup_warehouse();
+        }
+
+    </script>
+
+<?php
+}else{ ?>
+    <script>
+        jQuery(document).ready(function () {
+            getData();
+        });
+    </script>
+<?php } ?>

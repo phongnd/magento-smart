@@ -1,0 +1,59 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Smartor
+ * Date: 6/26/14
+ * Time: 3:31 PM
+ */
+?>
+
+<div class="checkout-item no-hover" xmlns="http://www.w3.org/1999/html">
+    <div class="entry-edit">
+        <div id="group-coupon-code-heading" class="entry-edit-head">
+            <h4 id="group-coupon-code-h4" class="icon-head"><?php echo $this->__('Gift Cards'); ?></h4>
+            <span class="ui-icon-off-coupon"></span>
+        </div>
+        <fieldset class="np content">
+            <div id="group-coupon-code-content" class="content">
+                <p><input id="giftcardaccount_add_input" type="text" class="input-text" style="width:200px;padding: 4px 8px" />&nbsp;<button onclick="applyGiftCard(); showOrderMessageBoxForGiftCards();" type="button" value="" class="scalable"><span><span><span><?php echo $this->__('Add Gift Card'); ?></span></span></span></button></p>
+                <?php foreach ($this->getGiftCards() as $_card): ?>
+                    <p style="margin-top: 5px;"><input readonly id="giftcardaccount_add_input" type="text" class="input-text" value="<?php echo $_card; ?>" style="width:200px;padding: 4px 8px" /> <button  type="button" value="" class="scalable" onclick="removeGiftCard('<?php echo $_card; ?>',this); return false;" title="<?php echo $this->__('Remove'); ?>"><?php echo $this->__('Remove'); ?></button></p>
+                <?php endforeach; ?>
+            </div>
+        </fieldset>
+    </div>
+</div>
+<script>
+    function showOrderMessageBoxForGiftCards(){
+        jQuery('#order-message').show();
+        setTimeout(function() { jQuery("#order-message").hide(); }, 10000);
+    }
+</script>
+<script type="text/javascript">
+    order.sidebarHide();
+    document.observe("xpos:productConfigure_created", function() {
+        productConfigure.addListType('product_to_add', {
+            urlFetch: '<?php echo $this->getUrl('*/sales_order_create/configureProductToAdd') ?>'
+        });
+        productConfigure.addListType('quote_items', {
+            urlFetch: '<?php echo $this->getUrl('*/sales_order_create/configureQuoteItems') ?>'
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    //<![CDATA[
+    function removeGiftCard(code,obj) {
+        var data = {};
+        data['giftcard_remove'] = code;
+        order.loadArea(['items','totals', 'billing_method', 'giftcards','coupons'], true, data);
+        jQuery('#order-message').hide();
+        jQuery(obj).parent().css("display","none");
+    }
+
+    function applyGiftCard() {
+        var code = $('giftcardaccount_add_input').value;
+        order.applyGiftCard(code);
+    }
+    //]]>
+</script>

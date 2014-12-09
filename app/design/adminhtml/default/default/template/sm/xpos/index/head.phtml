@@ -1,0 +1,40 @@
+<meta http-equiv="Content-Type" content="<?php echo $this->getContentType() ?>"/>
+<!--<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" name="viewport">-->
+<meta name="HandheldFriendly" content="true">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+<!--<title><?php /*echo htmlspecialchars(html_entity_decode($this->getTitle())) */?></title>-->
+<title>X-POS</title>
+<link rel="icon" href="<?php echo $this->getSkinUrl('favicon.ico') ?>" type="image/x-icon"/>
+<link rel="shortcut icon" href="<?php echo $this->getSkinUrl('favicon.ico') ?>" type="image/x-icon"/>
+
+<?php echo $this->getCssJsHtml() ?>
+<?php echo $this->helper('core/js')->getTranslatorScript() ?>
+<?php echo $this->getChildHtml('calendar'); ?>
+<?php echo $this->getChildHtml('optional_zip_countries'); ?>
+
+<script type="text/javascript">
+    var BLANK_URL = '<?php echo $this->getJsUrl() ?>blank.html';
+    var BLANK_IMG = '<?php echo $this->getJsUrl() ?>spacer.gif';
+    var BASE_URL = '<?php echo $this->getUrl('*') ?>';
+    var SKIN_URL = '<?php echo $this->getSkinUrl() ?>';
+    var FORM_KEY = '<?php echo $this->getFormKey() ?>';
+    var loadProductUrl1 = '<?php echo Mage::helper("adminhtml")->getUrl("adminhtml/xposproduct/load",array("page"=>1)); ?>';
+    var loadProductUrl = loadProductUrl1.replace("?___SID=U","");
+    var searchProductUrl = '<?php echo Mage::helper("adminhtml")->getUrl("adminhtml/xposproduct/search"); ?>';
+    var placeholder = '<img src = "<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN) . "frontend/base/default/images/catalog/product/placeholder/small_image.jpg"; ?>">';
+    var flag_reload_page = 0;
+    var productData = {};
+    var categoryData = {};
+    var currentOrder = {};
+    var offlineSearch = <?php echo Mage::getStoreConfig('xpos/search/offlinesearch') ?> ==1;
+    var onFlyDiscount = <?php echo Mage::getStoreConfig('xpos/general/onfly_discount'); ?> == 1;
+    var displayTaxInCatalog = <?php echo Mage::getStoreConfig('tax/display/type') ?> ==2;
+    var displayTaxInShoppingCart = <?php echo Mage::getStoreConfig('tax/cart_display/price') ?> ==2;
+    var displayTaxInSubtotal = <?php echo Mage::getStoreConfig('tax/cart_display/subtotal') ?> ==2;
+    var displayTaxInGrandTotal = <?php echo Mage::getStoreConfig('tax/cart_display/grandtotal') ?> ==1;
+    var optionsPrice = new Product.OptionsPrice([]);
+</script>

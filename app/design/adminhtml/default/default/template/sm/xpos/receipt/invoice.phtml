@@ -1,0 +1,349 @@
+<?php
+
+$logo_receipt = "";
+if(is_file('media/xpos/' . Mage::getStoreConfig('xpos/customize/logo_receipt'))){
+    $logo_receipt = Mage::getBaseUrl('media') . 'xpos/' . Mage::getStoreConfig('xpos/customize/logo_receipt');
+}
+
+$info_order = Mage::getSingleton('adminhtml/session')->getInfoOrder();
+
+$entity_id = $info_order['entity_id'];
+
+$order_id = Mage::getSingleton('adminhtml/session')->getOrderViewDetail();
+$data = Mage::getModel('sales/order')->load($order_id);
+
+if(!$data->getData('entity_id')){
+
+    $order_id = $info_order['order_id'];
+    $data = Mage::getModel('sales/order')->load($order_id, 'increment_id');
+
+    $balance = $info_order['balance'];
+    $customer = $info_order['customer_name'];
+}
+else {
+    $balance = $data->getData('balance');
+    $customer = $data->getData('customer_name');
+    Mage::getSingleton('adminhtml/session')->setOrderViewDetail(NULL);
+}
+if(Mage::getStoreConfig('tax/sales_display/subtotal') == 1){
+    $sub_total = $data->getData('subtotal');
+}else{
+    $sub_total = $data->getData('base_subtotal_incl_tax');
+}
+$tax_amount = $data->getData('tax_amount');
+$grand_total =  $data->getData('grand_total');
+if($info_order){
+    $total_paid = $info_order['totalPaid'];
+}
+else{
+    $total_paid = $data->getData('total_paid');
+}
+$customer_balance = 0;
+if($data->getData('base_customer_balance_amount') != 0){
+    $customer_balance = $data->getData('base_customer_balance_amount');
+}
+$ship_amount = $data->getData('shipping_amount');
+$discount_amount = str_replace('-', '', $data->getData('base_discount_amount'));
+$giftcard_amount = $data->getData('gift_cards_amount');
+
+
+$customer_name = Mage::getStoreConfig('xpos/guest/guest_name');
+if ($customer != 'guest') {
+    $customer_name = $customer;
+}
+
+$cashier_name = $this->getRequest()->getParam('cashier_name');
+
+$items = $data->getItemsCollection();
+
+?>
+
+<div id="store_information">
+    <div style="width: 128px;">
+    <?php
+    if ($logo_receipt != ''){
+        $size = getimagesize($logo_receipt);
+        if($size[0]>1000){
+           echo ' <table id ="table_logo" cellspacing="0" width="100%">
+                  <tr><td>';
+           echo "<img style='display:block;' width='100%' src='$logo_receipt' />";
+           echo ' </td></tr></table><br>';
+        }
+        else{
+            echo "<img src='$logo_receipt' style='width:100%'/><br>";
+        }
+    }
+    ?>
+    </div>
+    <?php
+    if (Mage::getStoreConfig('general/store_information/name', Mage::getStoreConfig('xpos/general/storeid')) != '') {
+       echo Mage::getStoreConfig('general/store_information/name', Mage::getStoreConfig('xpos/general/storeid')) . "<br/>";
+    }
+    ?>
+    <?php
+    if (Mage::getStoreConfig('general/store_information/address', Mage::getStoreConfig('xpos/general/storeid')) != '') {
+        echo str_replace("\n", "<br/>", Mage::getStoreConfig('general/store_information/address'), Mage::getStoreConfig('xpos/general/storeid')) . "<br/>";
+    }
+    ?>
+
+    <?php if ($store_phone = Mage::getStoreConfig('general/store_information/phone', Mage::getStoreConfig('xpos/general/storeid'))): ?>
+        T: <?php echo $store_phone ?>
+    <?php endif; ?>
+</div>
+<h1 class="a-center"><?php echo $this->__("Invoice"); ?></h1>
+
+
+<div class="entry-edit">
+    <table cellspacing="0" class="box-left form-list">
+        <tr>
+            <td class="label"><label><?php echo Mage::helper('sales')->__("Order No."); ?></label></td>
+            <td class="value"><strong><?php echo $order_id ?></strong></td>
+        </tr>
+        <tr>
+            <td class="label"><label><?php echo Mage::helper('sales')->__('Date') ?></label></td>
+            <td class="value"><strong><?php echo date('d/m/Y', strtotime($data->getCreatedAt())) ?></strong></td>
+        </tr>
+        <tr>
+            <td class="label"><label><?php echo Mage::helper('sales')->__('Customer') ?></label></td>
+            <td class="value"><strong><?php echo $customer_name ?></strong></td>
+        </tr>
+        <?php if(Mage::getStoreConfig('xpos/general/enabled_cashier')){?>
+        <tr>
+            <td class="label"><label><?php echo Mage::helper('sales')->__('Cashier') ?></label></td>
+            <td class="value"><strong id="cashier_name"><?php echo $cashier_name ?></strong></td>
+        </tr>
+        <?php } ?>
+    </table>
+    <table cellspacing="0" class="box-right form-list">
+        <tr>
+            <td class="label"><label><?php echo Mage::helper('sales')->__("Time"); ?></label></td>
+            <td class="value"><strong><?php
+                    $now_time = Mage::getModel('core/date')->timestamp($data->getCreatedAt());
+                    echo date('H:i:s A', $now_time) ?></strong></td>
+        </tr>
+        <tr>
+            <td class="label"><label><?php echo Mage::helper('sales')->__("Payment"); ?></label></td>
+            <td class="value"><strong><?php if($grand_total==0) echo "No Payment"; else echo $data->getPayment()->getMethodInstance()->getTitle() ?></strong></td>
+        </tr>
+    </table>
+    <div class="clear"></div>
+</div>
+<div class="clear"></div>
+
+<div class="grid np">
+    <div class="hor-scroll">
+        <table cellspacing="0" class="data order-tables">
+            <col/>
+            <col width="1"/>
+            <col width="1"/>
+            <col width="1"/>
+            <thead>
+            <tr class="headings">
+                <th class="no_col"><b><?php echo $this->helper('sales')->__('No') ?></b></th>
+                <th><b><?php echo $this->helper('sales')->__('Description') ?></b></th>
+                <th class="a-center"><b><?php echo $this->helper('sales')->__('Qty') ?></b></th>
+                <th><b><?php echo $this->helper('sales')->__('Price') ?></b></th>
+                <th class="last"><b><?php echo $this->helper('sales')->__('Subtotal') ?></b></th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php $i = 0;
+            foreach ($items as $item){
+                if( $item->getData('parent_item_id') == null){
+	            ?>
+                <?php $i++; ?>
+                <tr class="border <?php echo $i % 2 ? 'even' : 'odd' ?>">
+                    <td class="no_col"><?php echo $i ?></td>
+
+                    <td>
+                        <div id="order_item_<?php echo $item->getData('item_id'); ?>" class="item-container">
+                            <div class="item-text">
+                                <h5 class="title"><span
+                                        id="order_item_<?php echo $item->getData('item_id'); ?>_title"><?php echo $item->getData('name'); ?></span>
+                                </h5>
+
+                                <div><strong>SKU:</strong> <?php echo $item->getData('sku'); ?></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="a-center"><?php echo floatval($item->getQtyOrdered()); ?></td>
+                    <td class="a-right">
+                        <?php if ($this->helper('tax')->displaySalesBothPrices() || $this->helper('tax')->displaySalesPriceExclTax()): ?>
+                            <span class="price-excl-tax">
+                                <span
+                                    class="price"><?php echo Mage::helper('core')->formatPrice($item->getData('price')); ?></span>
+                            </span>
+                            <br/>
+                        <?php endif; ?>
+                        <?php if ($this->helper('tax')->displaySalesBothPrices() || $this->helper('tax')->displaySalesPriceInclTax()): ?>
+                            <span class="price-incl-tax">
+                                <span
+                                    class="price"><?php echo Mage::helper('core')->formatPrice($item->getData('price_incl_tax')); ?></span>
+                            </span>
+                        <?php endif; ?>
+                    </td>
+
+                    <td class="a-right last">
+                        <?php if ($this->helper('tax')->displaySalesBothPrices() || $this->helper('tax')->displaySalesPriceExclTax()): ?>
+                            <span class="price-excl-tax">
+                                <span
+                                    class="price"><?php echo Mage::helper('core')->formatPrice($item->getData('base_row_total')); ?></span>
+                            </span>
+                            <br/>
+                        <?php endif; ?>
+                        <?php if ($this->helper('tax')->displaySalesBothPrices() || $this->helper('tax')->displaySalesPriceInclTax()): ?>
+                            <span class="price-incl-tax">
+                                <span
+                                    class="price"><?php echo Mage::helper('core')->formatPrice($item->getData('row_total_incl_tax')); ?></span>
+                            </span>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php } ?>
+            <?php } ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<br/>
+
+<div class="clear"></div>
+<div class="entry-edit">
+
+    <table cellspacing="0" width="100%">
+        <col/>
+        <col width="1"/>
+        <tbody>
+        <tr>
+            <td class="label">
+                <strong><?php echo $this->helper('sales')->__('Subtotal') ?></strong>
+            </td>
+            <td class="emph a-right">
+                <strong><span class="price"><?php echo Mage::helper('core')->formatPrice($sub_total) ?></span></strong>
+            </td>
+        </tr>
+        <?php if (($tax_amount) != 0) { ?>
+            <tr>
+                <td class="label">
+                    <strong><?php echo $this->helper('sales')->__('Tax') ?></strong>
+                </td>
+                <td class="emph a-right">
+                    <strong><span
+                            class="price"><?php echo Mage::helper('core')->formatPrice($tax_amount) ?></span></strong>
+                </td>
+            </tr>
+        <?php } ?>
+        <?php if (intval($ship_amount) != 0) { ?>
+            <tr>
+                <td class="label">
+                    <strong><?php echo $this->helper('sales')->__('Shipping') ?></strong>
+                </td>
+                <td class="emph a-right">
+                    <strong><span
+                            class="price"><?php echo Mage::helper('core')->formatPrice($ship_amount) ?></span></strong>
+                </td>
+            </tr>
+        <?php } ?>
+        <?php if (intval($discount_amount) != 0) { ?>
+            <tr>
+                <td class="label">
+                    <strong><?php echo $this->helper('sales')->__('Discount') ?></strong>
+                </td>
+                <td class="emph a-right">
+                    <strong><span
+                            class="price"><?php echo Mage::helper('core')->formatPrice($discount_amount) ?></span></strong>
+                </td>
+            </tr>
+        <?php } ?>
+        <?php if(intval($giftcard_amount) != 0) { ?>
+            <tr>
+                <td class="label">
+                    <strong><?php echo $this->helper('sales')->__('GiftCard') ?></strong>
+                </td>
+                <td class="emph a-right">
+                    <strong><span
+                            class="price"><?php echo Mage::helper('core')->formatPrice($giftcard_amount) ?></span></strong>
+                </td>
+            </tr>
+        <?php } ?>
+
+        <?php if(($customer_balance) != 0) { ?>
+            <tr>
+                <td class="label">
+                    <strong><?php echo $this->helper('sales')->__('Store Credit') ?></strong>
+                </td>
+                <td class="emph a-right">
+                    <strong><span
+                            class="price"><?php echo Mage::helper('core')->formatPrice($customer_balance) ?></span></strong>
+                </td>
+            </tr>
+        <?php } ?>
+
+        <tr>
+            <td class="label">
+                <strong><?php echo $this->helper('sales')->__('Grand Total') ?></strong>
+            </td>
+            <td class="emph a-right">
+                <strong><span
+                        class="price"><?php echo Mage::helper('core')->formatPrice($grand_total) ?></span></strong>
+            </td>
+        </tr>
+        <tr>
+            <td class="label">
+                <strong><?php echo $this->helper('sales')->__('Total Paid') ?></strong>
+            </td>
+            <td class="emph a-right">
+                <strong><span class="price"><?php echo Mage::helper('core')->formatPrice($total_paid) ?></span></strong>
+            </td>
+        </tr>
+        <?php if (($balance) > 0) { ?>
+            <tr>
+                <td class="label">
+                    <strong><?php echo $this->helper('sales')->__('Change') ?></strong>
+                </td>
+                <td class="emph a-right">
+                    <strong><span class="price"><?php echo Mage::helper('core')->formatPrice($balance) ?></span></strong>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
+
+</div>
+<div class="clear"></div>
+<?php Mage::getSingleton('adminhtml/session')->setInfoOrder(); ?>
+
+<script type="text/javascript">
+    document.observe("dom:loaded", function () {
+        window.print();
+        window.onfocus = function () {
+            window.close();
+        }
+    });
+</script>
+<?php echo $this->getChildHtml('popup_window'); ?>
+<script type="text/javascript">
+    //<![CDATA[
+    /**
+     * Retrieve gift options tooltip content
+     */
+    function getGiftOptionsTooltipContent(itemId) {
+        var contentLines = [];
+        var headerLine = null;
+        var contentLine = null;
+
+        $$('#gift_options_data_' + itemId + ' .gift-options-tooltip-content').each(function (element) {
+            if (element.down(0)) {
+                headerLine = element.down(0).innerHTML;
+                contentLine = element.down(0).next().innerHTML;
+                if (contentLine.length > 30) {
+                    contentLine = contentLine.slice(0, 30) + '...';
+                }
+                contentLines.push(headerLine + ' ' + contentLine);
+            }
+        });
+        return contentLines.join('<br/>');
+    }
+    giftOptionsTooltip.setTooltipContentLoaderFunction(getGiftOptionsTooltipContent);
+    //]]>
+</script>

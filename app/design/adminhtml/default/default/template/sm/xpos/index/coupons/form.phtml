@@ -1,0 +1,38 @@
+<div class="checkout-item no-hover">
+    <div class="entry-edit">
+        <div class="entry-edit-head" id="group-coupon-code-heading">
+            <h4 class="icon-head"
+                id="group-coupon-code-h4"><?php echo Mage::helper('sales')->__('Apply Coupon Code') ?></h4>
+            <span class="ui-icon-off-coupon"></span>
+        </div>
+        <fieldset class="np content">
+            <div class="content" id="group-coupon-code-content">
+                <p>
+                    <?php if ($this->getCouponCode()) { ?>
+                        <input type="text" class="input-text" id="coupons:code"
+                               value="<?php echo $this->getCouponCode() ?>" name="coupon_code"
+                               style="width:200px; padding: 4px 8px" disabled/>&nbsp;
+                        <?php echo $this->getButtonHtml(Mage::helper('sales')->__('Remove'), "order.applyCoupon('');") ?>
+                    <?php } else { ?>
+                        <input type="text" class="input-text" id="coupons:code" value="" name="coupon_code"
+                               style="width:200px; padding: 4px 8px"/>&nbsp;
+                        <?php echo $this->getButtonHtml(Mage::helper('sales')->__('Apply'), 'order.applyCoupon($F(\'coupons:code\'));showOrderMessBox();') ?>
+                    <?php } ?>
+                </p>
+            </div>
+        </fieldset>
+    </div>
+</div>
+<script>
+
+    <?php if ($this->getCouponCode()) { ?>
+    var coupon_code = jQuery("[name='coupon_code']").val();
+    jQuery("#discount_detail").html("Coupon : " + coupon_code);
+    <?php }else{ ?>
+    jQuery("#discount_detail").html(" No Discount");
+    <?php } ?>
+
+    function showOrderMessBox() {
+        //jQuery('#order-message').show();
+    }
+</script>

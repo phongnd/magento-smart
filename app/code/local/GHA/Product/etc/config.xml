@@ -1,0 +1,36 @@
+<?xml version='1.0' ?>
+<config>
+    <modules>
+        <GHA_Product>
+            <version>0.1.0</version>
+        </GHA_Product>
+    </modules>
+    <global>
+
+    </global>
+    <frontend>
+        <events>
+            <catalog_product_new_action>
+                <observers>
+                    <gha_product>
+                        <type>singleton</type>
+                        <class>GHA_Product_Model_Observer</class>
+                        <method>catalogProductNewAction</method>
+                    </gha_product>
+                </observers>
+            </catalog_product_new_action>
+        </events>
+    </frontend>
+    <adminhtml>
+        <events>
+            <catalog_product_new_action>
+                <observers>
+                    <gha_customer_catalog_product_new_action>
+                        <class>GHA_Product_Model_Observer</class>
+                        <method>catalogProductNewAction</method>
+                    </gha_customer_catalog_product_new_action>
+                </observers>
+            </catalog_product_new_action>
+        </events>
+    </adminhtml>
+</config>

@@ -1,0 +1,218 @@
+@import "compass";
+
+// Break Point  ========================================================
+
+$desktop-only:           min-width 960px;
+$tablet:                     1024px;
+$mobile-orientation:    max-width 767px;
+$mobile-portrait:         max-width 600px;
+
+@mixin tablet {
+  @media only screen and (max-width: $tablet) { @content; }
+}
+
+/* -------------------------------------------------------------
+  Sass CSS3 Mixins! retina display
+------------------------------------------------------------- */
+@mixin retina-display {
+  @media
+  only screen and (-webkit-min-device-pixel-ratio: 1.5),
+  only screen and (-o-min-device-pixel-ratio: 3/2),
+  only screen and (min--moz-device-pixel-ratio: 1.5),
+  only screen and (min-device-pixel-ratio: 1.5) { @content; }
+}
+
+// retina images
+@mixin retina-background-image($file, $type, $width, $height) {
+  background-image: url(unquote($file) + '.' + $type);
+  @media
+  only screen and (-webkit-min-device-pixel-ratio: 1.5),
+  only screen and (-o-min-device-pixel-ratio: 3/2),
+  only screen and (min--moz-device-pixel-ratio: 1.5),
+  only screen and (min-device-pixel-ratio: 1.5) {
+    & {
+      background-image: url(unquote($file) + '@2x.' + $type);
+      -moz-background-size:     $width $height;
+      -webkit-background-size:  $width $height;
+      -o-background-size:       $width $height;
+      background-size:          $width $height;
+    }
+  }
+}
+//@include retina-background-image("../images/background", png, 47px,27px);
+
+// Grid system ========================================================
+
+// Grid variable
+/*
+$total-columns:                16;
+$column-width:                 60px;
+$gutter-width:                   20px;
+$grid-padding:                   0;
+$container-style: fluid; // default to magic. Switch to fluid or fixed if desired
+*/
+
+$base-width:          960px;
+$totals-columns:      16;
+$grid-width:          100%;
+$margin:              1.041666666666667%;
+
+/* #Clearing
+================================================== */
+/* Include clearfix on parent to clear nested columns,
+or wrap each row of columns in a @include row */
+@mixin clearfix {
+  zoom: 1;
+  &:after { clear: both; }
+  &:before, &:after {
+    content: '\0020';
+    display: block;
+    overflow: hidden;
+    visibility: hidden;
+    width: 0;
+    height: 0;}
+}
+/* You can also use a @include clear to clear columns */
+@mixin clear {
+  clear: both;
+  display: block;
+  overflow: hidden;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+}
+
+/* Grid Layout
+================================================== */
+// function math-column-width
+//  @return colum width
+
+@function math-column-width($num: 1, $width: $grid-width) {
+  @return ($num * ($width / $totals-columns)) - (2 * $margin);
+}
+
+@mixin column {
+  float: left;
+  display: inline;
+  margin-left: $margin;
+  margin-right: $margin;
+}
+
+@mixin column-padding {
+  float: left;
+  display: inline;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: $margin;
+  padding-right: $margin;
+  @include box-sizing(border-box);
+}
+
+@mixin row($marginRow: $margin) {
+  @include clearfix;
+  margin-bottom: 2 * $marginRow;
+}
+
+@mixin columns($num: 1, $use-padding: false) {
+  @if not $use-padding {
+    @include column;    
+    width: math-column-width($num, $grid-width);
+  } @else {    
+    @include column-padding;
+    width: $num * ($grid-width / $totals-columns);
+  }
+}
+
+@mixin alpha { margin-left: 0; }
+@mixin omega { margin-right: 0; }
+
+/* Prefix Extra Space */
+@mixin prefix($num: 1) {
+  padding-left: $grid-width - ($grid-width - (($grid-width / $totals-columns) * $num));
+}
+
+/* Suffix Extra Space */
+@mixin suffix($num: 1) {
+  padding-right: $grid-width - ($grid-width - (($grid-width / $totals-columns) * $num));
+}
+
+/* Push Space */
+@mixin push($num: 1) {
+  margin-left: $grid-width - ($grid-width - (($grid-width / $totals-columns) * $num)) + $margin;
+  position: relative;
+}
+
+/* Pull Space */
+@mixin pull($num: 1) {
+  margin-right: $grid-width - ($grid-width - (($grid-width / $totals-columns) * $num)) + $margin;
+  position: relative;
+}
+
+/* colum base - margin = 0 */
+@mixin columns-base ($num: 1) {
+  float: left;
+  display: inline;
+  width: $num * ($grid-width / $totals-columns);
+  margin-left: 0;
+  margin-right: 0;
+}
+
+// Example
+//.column-4 { @include columns-base(4) } 
+//.column-5 { @include columns(4) } 
+//.column-6 { @include columns(4,true) } 
+//...
+
+
+/* create or custom  grid */
+@mixin span-grid($num: 4, $gridCol: 16, $gridWidth: 100%, $gutter: false, $padding: false) {
+  float: left;
+  display: inline;
+  @if not $gutter {
+    width: $num * ($gridWidth / $gridCol);
+  } @else {    
+    @if not $padding {
+      width: ($num * ($gridWidth / $gridCol)) - (2 * $gutter);
+      margin-left: $gutter;
+      margin-right: $gutter;
+    } @else {    
+      width: $num * ($gridWidth / $gridCol);
+      padding-left: $gutter;
+      padding-right: $gutter;
+      @include box-sizing(border-box);
+    }
+  }
+}
+
+// Example
+//  4 col - grid 12 - margin 0 - padding 0
+//.new-grid { @include span-grid(4, 12) } 
+
+//  4 col - grid 12 - width 100% - margin-left 1% - margin-right 1%
+//.new-grid { @include span-grid(4, 12, 100%, 2%) }
+
+//  4 col - grid 12 - width 100% - padding-left 1% - padding-right 1% - margin 0
+//.new-grid { @include span-grid(4, 12, 100%, 2%, true) }
+
+@mixin full-width {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Mixin container width
+================================================== */
+
+@mixin container {
+  position: relative;
+  margin: 0 auto;
+  padding: 0;
+  width: $base-width;
+  @include  clearfix;
+
+  @include breakpoint($tablet) {
+    @include full-width;
+  }
+
+}
+

@@ -1,0 +1,480 @@
+<?php
+$_fieldsContainerId = 'order-shipping_address_fields';
+$_countries = Mage::getResourceModel('directory/country_collection')
+    ->loadData()
+    ->toOptionArray(false);
+
+$params = $this->getRequest()->getParams();
+if (isset($params['order_id'])) {
+    $order = Mage::getModel('sales/order')->load($params['order_id']);
+    $shippingAddress = $order->getShippingAddress();
+    $billingAddress = $order->getBillingAddress();
+    if (!empty($shippingAddress)) {
+        $shippingInfo = $order->getShippingAddress()->getData();
+    }
+    if (!empty($billingAddress)) {
+        $billingInfo = $billingAddress->getData();
+    }
+    $customer = Mage::getModel('customer/customer')->load($order['customer_id'])->getData();
+}
+
+?>
+<input type="hidden" name="order[account][group_id]" id="customer_group"
+       value="<?php if (isset($order['customer_id'])) {
+           echo $customer['group_id'];
+       } else {
+           echo 1;
+       } ?>"/>
+<input type="hidden" name="order[account][type]" id="customer_type" value="<?php if (isset($order['customer_id'])) {
+    echo "exist";
+} else {
+    echo "guest";
+} ?>"/>
+
+<div id="customer_account_fields">
+
+    <!-- billing address-->
+    <div class="box-left" style="margin-top: 7px;" id="billing-details">
+        <fieldset class="np">
+            <input type="checkbox" id="order-billing_same_as_billing" name="billing_same_as_billing"
+                   onchange="enableBilling(this);" value="1" checked="checked"/>
+            <label for="order-billing_same_as_billing"
+                   class="no-float"><?php echo Mage::helper('sales')->__('Billing Address') ?></label>
+
+            <div class="order-address" id="billing-<?php echo $_fieldsContainerId ?>">
+                <div class="content" id="order-billing-address-content" style="display: none; position: relative;">
+                    <div style="position:absolute; width: 100%; height:100%; top:0; left:0;display:block;"
+                         id="billing-overlay">&nbsp;</div>
+                    <p><a href="#clear" id="clear_billing_address">Clear</a></p>
+                    <input name="order[billing_address][firstname]" type="text"
+                           placeholder="<?php echo $this->__('First Name'); ?>"
+                           class="input-text block notrequired-entry"
+                           id="order-billing_address_address_firstname"
+                           value="<?php echo isset($billingInfo['firstname']) ? $billingInfo['firstname'] : ''; ?>">
+                    <input name="order[account][gender]" type="hidden" value="123">
+                    </input>
+
+
+                    <input id="order-billing_address_address_lastname" name="order[billing_address][lastname]"
+                           type="text"
+                           placeholder="<?php echo $this->__('Last Name'); ?>"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($billingInfo['lastname']) ? $billingInfo['lastname'] : ''; ?>">
+
+                    <input id="order-billing_address_address_street0" name="order[billing_address][street][0]"
+                           type="text"
+                           placeholder="<?php echo $this->__('Street'); ?>"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($billingInfo['street']) ? $billingInfo['street'] : ''; ?>">
+
+                    <input id="order-billing_address_address_city" name="order[billing_address][city]"
+                           placeholder="<?php echo $this->__('City'); ?>"
+                           type="text"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($billingInfo['city']) ? $billingInfo['city'] : ''; ?>">
+
+                    <select id="order-billing_address_address_country_id" class=" notrequired-entry select"
+                            name="order[billing_address][country_id]" id="order-billing_address_country_id"
+                            onChange="clearBillingRegion()">
+
+                        <?php if (count($_countries) > 0): ?>
+                            <option value="">-- Please Select --</option>
+                            <?php foreach ($_countries as $_country): ?>
+                                <option
+                                    value="<?php echo $_country['value'] ?>" <?php if ($_country['value'] == (isset($billingInfo['country_id']) ? $billingInfo['country_id'] : '')): ?> selected <?php endif ?>>
+                                    <?php echo $_country['label'] ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+
+                    <select id="order-billing_address_address_region_id" name="order[billing_address][region_id]"
+                            title="<?php echo $this->__('State/Province') ?>" class="validate-select"
+                            style="display:none;max-width: 108px;"
+                        >
+                        <option value="0"><?php echo $this->__('Please select region, state or province') ?></option>
+                    </select>
+
+                    <select id="order-billing_address_address_region_virtual" onchange="updateBillingVirtual();"
+                            name="order[billing_address][region_virtual]"
+                            title="<?php echo $this->__('State/Province') ?>"
+                            class="validate-select" style="display:none;">
+                    </select>
+
+                    <input id="order-billing_address_address_region" name="order[billing_address][region]"
+                           type="text"
+                           style="display: none !important;max-width: 108px;"
+                           placeholder="<?php echo $this->__('Region'); ?>"
+                           class="input-text notrequired-entry"
+                           value="<?php echo isset($billingInfo['region']) ? $billingInfo['region'] : ''; ?>">
+
+                    <input id="order-billing_address_address_postcode" name="order[billing_address][postcode]"
+                           type="text"
+                           placeholder="<?php echo $this->__('Post Code'); ?>"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($billingInfo['postcode']) ? $billingInfo['postcode'] : ''; ?>">
+
+                    <input id="order-billing_address_address_telephone"
+                           placeholder="<?php echo $this->__('Telephone'); ?>"
+                           name="order[billing_address][telephone]" type="text"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($billingInfo['telephone']) ? $billingInfo['telephone'] : ''; ?>">
+
+                    <!-- This strict the region load event -->
+                    <label class="required">
+                        <span class="required"></span>
+                    </label>
+
+                </div>
+            </div>
+
+        </fieldset>
+    </div>
+    <!--End billing address-->
+
+    <!--Shipping address-->
+    <div class="box-right" style=" margin-top: 7px;" id="shipping-details">
+        <fieldset class="np">
+            <input type="checkbox" id="order-shipping_same_as_billing" name="shipping_same_as_billing"
+                   onchange="enableShipping(this);" checked/>
+            <label for="order-shipping_same_as_billing"
+                   class="no-float"><?php echo Mage::helper('sales')->__('Shipping Address') ?></label>
+
+            <div class="order-address" id="<?php echo $_fieldsContainerId ?>">
+                <div class="content" id="order-address-content" style="display: none;position: relative;">
+                    <div style="position:absolute; width: 100%; height:100%; top:0; left:0;display:block;"
+                         id="shipping-overlay">&nbsp;</div>
+                    <p><a href="#copy-from-billing" id="copy-from-billing-address">Same as</a> | <a
+                            href="#clear" id="clear_shipping_address">Clear</a></p>
+
+                    <input name="order[shipping_address][firstname]" type="text"
+                           placeholder="<?php echo $this->__('First Name'); ?>"
+                           class="input-text block notrequired-entry"
+                           id="order-shipping_address_address_firstname"
+                           value="<?php echo isset($shippingInfo['firstname']) ? $shippingInfo['firstname'] : ''; ?>">
+                    <input id="order-shipping_address_address_lastname" name="order[shipping_address][lastname]"
+                           placeholder="<?php echo $this->__('Last Name'); ?>"
+                           type="text"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($shippingInfo['lastname']) ? $shippingInfo['lastname'] : ''; ?>">
+
+                    <input id="order-shipping_address_address_street0" name="order[shipping_address][street][0]"
+                           placeholder="<?php echo $this->__('Street'); ?>"
+                           type="text"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($shippingInfo['street']) ? $shippingInfo['street'] : ''; ?>">
+
+                    <input id="order-shipping_address_address_city" name="order[shipping_address][city]"
+                           type="text"
+                           placeholder="<?php echo $this->__('City'); ?>"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($shippingInfo['city']) ? $shippingInfo['city'] : ''; ?>">
+
+                    <select id="order-shipping_address_address_country_id" class=" notrequired-entry select"
+                            name="order[shipping_address][country_id]" id="order-shipping_address_country_id"
+                            onChange="clearShippingRegion()">
+
+                        <?php if (count($_countries) > 0): ?>
+                            <option value="">-- Please Select --</option>
+                            <?php foreach ($_countries as $_country): ?>
+                                <option
+                                    value="<?php echo $_country['value'] ?>" <?php if ($_country['value'] == (isset($shippingInfo['country_id']) ? $shippingInfo['country_id'] : '')): ?> selected <?php endif ?>>
+                                    <?php echo $_country['label'] ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+
+                    <select id="order-shipping_address_address_region_id" name="order[shipping_address][region_id]"
+                            title="<?php echo $this->__('State/Province') ?>" class="validate-select"
+                            style="display:none;max-width: 108px;"
+                        >
+                        <option value="0"><?php echo $this->__('Please select region, state or province') ?></option>
+                    </select>
+
+                    <select id="order-shipping_address_address_region_virtual" onchange="updateVirtual();"
+                            name="order[shipping_address][region_virtual]"
+                            title="<?php echo $this->__('State/Province') ?>"
+                            class="validate-select" style="display:none;">
+                    </select>
+
+                    <input id="order-shipping_address_address_region" name="order[shipping_address][region]"
+                           type="text"
+                           style="display:none  !important;max-width: 108px; "
+                           placeholder="<?php echo $this->__('Region'); ?>"
+                           class="input-text notrequired-entry"
+                           value="<?php echo isset($shippingInfo['region']) ? $shippingInfo['region'] : ''; ?>">
+
+                    <input id="order-shipping_address_address_postcode" name="order[shipping_address][postcode]"
+                           type="text"
+                           placeholder="<?php echo $this->__('Post code'); ?>"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($shippingInfo['postcode']) ? $shippingInfo['postcode'] : ''; ?>">
+
+                    <input id="order-shipping_address_address_telephone"
+                           placeholder="<?php echo $this->__('Telephone'); ?>"
+                           name="order[shipping_address][telephone]" type="text"
+                           class="input-text block notrequired-entry"
+                           value="<?php echo isset($shippingInfo['telephone']) ? $shippingInfo['telephone'] : ''; ?>">
+
+                    <!-- This strict the region load event -->
+                    <label class="required">
+                        <span class="required"></span>
+                    </label>
+                </div>
+            </div>
+
+        </fieldset>
+
+    </div>
+    <div class="clear"></div>
+    <!--End shipping address-->
+
+</div>
+
+<script type="text/javascript">
+
+var guest_defaultname = '<?php echo Mage::getStoreConfig('xpos/guest/guest_name') ?>';
+guest_defaultname = guest_defaultname.split(" ");
+var guest_firstname = guest_defaultname[0];
+var guest_lastname = '';
+for (var i = 1; i < guest_defaultname.length; i++) {
+    guest_lastname = guest_lastname + " " + guest_defaultname[i];
+}
+guest_lastname = jQuery.trim(guest_lastname);
+if (guest_lastname == '') {
+    guest_lastname = 'Guest';
+}
+var defaultAddress = {
+    'firstname': guest_firstname,
+    'lastname': guest_lastname,
+    'street': '<?php echo Mage::getStoreConfig('xpos/guest/guest_street') ?>',
+    'city': '<?php echo Mage::getStoreConfig('xpos/guest/guest_city') ?>',
+    'country_id': '<?php echo Mage::getStoreConfig('xpos/guest/country_id') ?>',
+    'region_id': '<?php echo Mage::getStoreConfig('xpos/guest/region_id') ?>',
+    'region': '<?php echo Mage::getStoreConfig('xpos/guest/region_id') ?>',
+    'postcode': '<?php echo Mage::getStoreConfig('xpos/guest/guest_postal_code') ?>',
+    'telephone': '<?php echo Mage::getStoreConfig('xpos/guest/guest_phone') ?>',
+
+
+    'shipping_firstname': guest_firstname,
+    'shipping_lastname': guest_lastname,
+    'shipping_street': '<?php echo Mage::getStoreConfig('xpos/guest/guest_street') ?>',
+    'shipping_city': '<?php echo Mage::getStoreConfig('xpos/guest/guest_city') ?>',
+    'shipping_country_id': '<?php echo Mage::getStoreConfig('xpos/guest/country_id') ?>',
+    'shipping_region_id': '<?php echo Mage::getStoreConfig('xpos/guest/region_id') ?>',
+    'shipping_region': '<?php echo Mage::getStoreConfig('xpos/guest/region_id') ?>',
+    'shipping_postcode': '<?php echo Mage::getStoreConfig('xpos/guest/guest_postal_code') ?>',
+    'shipping_telephone': '<?php echo Mage::getStoreConfig('xpos/guest/guest_phone') ?>'
+};
+
+var existAddress = defaultAddress;
+
+function setAdd(arr, update) {
+
+    if (jQuery('input[name="order[account][type]"]').val() == 'new' || jQuery('input[name="order[account][type]"]').val() == 'guest') {
+        jQuery('#order-shipping_address_address_firstname').val(arr.firstname);
+        jQuery('#order-shipping_address_address_lastname').val(arr.lastname);
+        jQuery('#order-shipping_address_address_street0').val(arr.street);
+        jQuery('#order-shipping_address_address_country_id').val(arr.country_id);
+        shippingRegionUpdater.update();
+        jQuery('#order-shipping_address_address_city').val(arr.city);
+        jQuery('#order-shipping_address_address_region').val(arr.region);
+        jQuery('#order-shipping_address_address_region_id').val(arr.region_id);
+        jQuery('#order-shipping_address_address_postcode').val(arr.postcode);
+        jQuery('#order-shipping_address_address_telephone').val(arr.telephone);
+
+        setTimeout(function () {
+            jQuery.uniform.update()
+            if (jQuery('#order-shipping_address_address_region_id').is(":disabled")) {
+                jQuery('#uniform-order-shipping_address_address_region_id').hide('slow');
+            } else {
+                jQuery('#uniform-order-shipping_address_address_region_id').show('slow');
+            }
+        }, 10);
+
+        jQuery('#order-billing_address_address_firstname').val(arr.firstname);
+        jQuery('#order-billing_address_address_lastname').val(arr.lastname);
+        jQuery('#order-billing_address_address_street0').val(arr.street);
+        jQuery('#order-billing_address_address_country_id').val(arr.country_id);
+        billingRegionUpdater.update();
+        jQuery('#order-billing_address_address_city').val(arr.city);
+        jQuery('#order-billing_address_address_region').val(arr.region);
+        jQuery('#order-billing_address_address_region_id').val(arr.region_id);
+        jQuery('#order-billing_address_address_postcode').val(arr.postcode);
+        jQuery('#order-billing_address_address_telephone').val(arr.telephone);
+
+        setTimeout(function () {
+            jQuery.uniform.update()
+            if (jQuery('#order-billing_address_address_region_id').is(":disabled")) {
+                jQuery('#uniform-order-billing_address_address_region_id').hide('slow');
+            } else {
+                jQuery('#uniform-order-billing_address_address_region_id').show('slow');
+            }
+        }, 10);
+    }
+    if (update && flag_reload_page) {
+            updateShippingRates();
+    }
+}
+
+function changeAddress() {
+    var newAddress = {
+        'firstname': jQuery('#order-shipping_address_address_firstname').val() != '' ? jQuery('#order-shipping_address_address_firstname').val() : 'Guest',
+        'lastname': jQuery('#order-shipping_address_address_lastname').val() != '' ? jQuery('#order-shipping_address_address_lastname').val() : 'Guest',
+        'street': jQuery('#order-shipping_address_address_street0').val() != '' ? jQuery('#order-shipping_address_address_street0').val() : '<?php echo Mage::getStoreConfig('xpos/guest/guest_street') ?>',
+        'city': jQuery('#order-shipping_address_address_city').val() != '' ? jQuery('#order-shipping_address_address_city').val() : '<?php echo Mage::getStoreConfig('xpos/guest/guest_city') ?>',
+        'country_id': jQuery('#order-shipping_address_address_country_id').val() != '' ? jQuery('#order-shipping_address_address_country_id').val() : '<?php echo Mage::getStoreConfig('xpos/guest/country_id'); ?>',
+        'region_id': jQuery('#order-shipping_address_address_region_id').val() != '' ? jQuery('#order-shipping_address_address_region_id').val() : '<?php echo Mage::getStoreConfig('xpos/guest/region_id'); ?>',
+        'postcode': jQuery('#order-shipping_address_address_postcode').val() != '' ? jQuery('#order-shipping_address_address_postcode').val() : '<?php echo Mage::getStoreConfig('xpos/guest/guest_postal_code'); ?>',
+        'telephone': jQuery('#order-shipping_address_address_telephone').val() != '' ? jQuery('#order-shipping_address_address_telephone').val() : '<?php echo Mage::getStoreConfig('xpos/guest/guest_phone') ?>'
+    };
+    setAdd(newAddress, true);
+}
+
+order.shippingAddressContainer = '<?php echo $_fieldsContainerId ?>';
+order.setAddresses(<?php echo $this->getAddressCollectionJson() ?>);
+
+function enableBilling(e) {
+    if (e.checked) {
+        jQuery('#billing-overlay').show();
+        $('order-billing-address-content').hide();
+    } else {
+        $('order-billing-address-content').show();
+        $('order-address-content').show();
+        jQuery('input#order-shipping_same_as_billing').attr('checked', false);
+
+        jQuery('#billing-overlay').hide();
+        jQuery('#shipping-overlay').hide();
+
+    }
+    e.disabled = false;
+}
+
+function enableShipping(e) {
+    if (e.checked) {
+        jQuery('#shipping-overlay').show();
+        $('order-address-content').hide();
+    } else {
+        $('order-billing-address-content').show();
+        $('order-address-content').show();
+        jQuery('input#order-billing_same_as_billing').attr('checked', false);
+
+        jQuery('#shipping-overlay').hide();
+        jQuery('#billing-overlay').hide();
+    }
+    e.disabled = false;
+}
+
+function clearShippingRegion() {
+    jQuery('#order-shipping_address_address_region').val('');
+    jQuery('#order-shipping_address_address_region_id').val('');
+
+    setTimeout(function () {
+        if (jQuery('#order-shipping_address_address_region_id').is(":disabled")) {
+            jQuery('#uniform-order-shipping_address_address_region_id').hide('slow');
+        } else {
+            jQuery('#uniform-order-shipping_address_address_region_id').show('slow');
+        }
+    }, 10);
+
+}
+
+function clearBillingRegion() {
+    jQuery('#order-billing_address_address_region').val('');
+    jQuery('#order-billing_address_address_region_id').val('');
+
+    setTimeout(function () {
+        if (jQuery('#order-billing_address_address_region_id').is(":disabled")) {
+            jQuery('#uniform-order-billing_address_address_region_id').hide('slow');
+        } else {
+            jQuery('#uniform-order-billing_address_address_region_id').show('slow');
+        }
+    }, 10);
+}
+
+function updateShippingRates() {
+    jQuery('#order-shipping_address_address_region_virtual').hide();
+    if (isOnline()) {
+        var data = order.serializeData(order.shippingAddressContainer).toObject();
+        order.isShippingMethodReseted = false;
+        data.collect_shipping_rates = 1;
+        data.reload_order = jQuery('#reload_order').val();
+        if (!initialLoad) {
+            order.loadArea(['shipping_method', 'totals'], true, data);
+        }
+    }
+}
+
+shippingRegionUpdater = new RegionUpdater('order-shipping_address_address_country_id', 'order-shipping_address_address_region', 'order-shipping_address_address_region_id', <?php echo $this->helper('directory')->getRegionJson() ?>, undefined, 'order-billing_address_address_postcode');
+billingRegionUpdater = new RegionUpdater('order-billing_address_address_country_id', 'order-billing_address_address_region', 'order-billing_address_address_region_id', <?php echo $this->helper('directory')->getRegionJson() ?>, undefined, 'order-billing_address_address_postcode');
+
+jQuery('#clear_shipping_address').click(function () {
+    jQuery('#order-shipping_address_address_firstname').val('');
+    jQuery('#order-shipping_address_address_lastname').val('');
+    jQuery('#order-shipping_address_address_street0').val('');
+    jQuery('#order-shipping_address_address_city').val('');
+    jQuery('#order-shipping_address_address_country_id').val('');
+    jQuery('#order-shipping_address_address_region').val('');
+    jQuery('#order-shipping_address_address_region').show();
+    jQuery('#order-shipping_address_address_region_id').hide();
+    jQuery('#order-shipping_address_address_postcode').val('');
+    jQuery('#order-shipping_address_address_telephone').val('');
+    jQuery('#order-shipping_address_address_region_id').attr('disabled', true);
+    jQuery.uniform.update();
+    clearShippingRegion();
+});
+
+jQuery('#clear_billing_address').click(function () {
+    jQuery('#order-billing_address_address_firstname').val('');
+    jQuery('#order-billing_address_address_lastname').val('');
+    jQuery('#order-billing_address_address_street0').val('');
+    jQuery('#order-billing_address_address_city').val('');
+    jQuery('#order-billing_address_address_country_id').val('');
+    jQuery('#order-billing_address_address_region_id').val('');
+    jQuery('#order-billing_address_address_region').val('');
+    jQuery('#order-billing_address_address_region').show();
+    jQuery('#order-billing_address_address_region_id').hide();
+    jQuery('#order-billing_address_address_postcode').val('');
+    jQuery('#order-billing_address_address_telephone').val('');
+    jQuery('#order-billing_address_address_region_id').attr('disabled', true);
+    jQuery.uniform.update();
+    clearBillingRegion();
+
+});
+
+jQuery('#copy-from-billing-address').click(function () {
+    jQuery('#order-shipping_address_address_firstname').val(jQuery('#order-billing_address_address_firstname').val());
+    jQuery('#order-shipping_address_address_lastname').val(jQuery('#order-billing_address_address_lastname').val());
+    jQuery('#order-shipping_address_address_street0').val(jQuery('#order-billing_address_address_street0').val());
+    jQuery('#order-shipping_address_address_city').val(jQuery('#order-billing_address_address_city').val());
+    jQuery('#order-shipping_address_address_country_id').val(jQuery('#order-billing_address_address_country_id').val());
+    shippingRegionUpdater.update()
+    jQuery('#order-shipping_address_address_region_id').val(jQuery('#order-billing_address_address_region_id').val());
+    jQuery('#order-shipping_address_address_region').val(jQuery('#order-billing_address_address_region').val());
+    jQuery('#order-shipping_address_address_postcode').val(jQuery('#order-billing_address_address_postcode').val());
+    jQuery('#order-shipping_address_address_telephone').val(jQuery('#order-billing_address_address_telephone').val());
+    jQuery.uniform.update();
+    setTimeout(function () {
+        if (jQuery('#order-shipping_address_address_region_id').is(":disabled")) {
+            jQuery('#uniform-order-shipping_address_address_region_id').hide('slow');
+        } else {
+            jQuery('#uniform-order-shipping_address_address_region_id').show('slow');
+        }
+    }, 10);
+});
+
+jQuery(document).ready(function () {
+    <?php if(isset($order['customer_id'])){ ?>
+    jQuery('#order_customer_id').val(<?php echo $customer['entity_id'] ?>);
+    jQuery('#order_account_email').val('<?php echo $customer['email'] ?>');
+    jQuery("#customer_options").removeClass('search-customer');
+    jQuery("#customer_options").addClass('delete-customer');
+    jQuery("#customer_options").attr('onclick', 'come_back_guest()');
+    jQuery("#customer_name").html('<?php echo $customer['firstname'] . " " . $customer['lastname']; ?>');
+    <?php }else{ ?>
+    setAdd(defaultAddress, true);
+    <?php } ?>
+});
+
+</script>

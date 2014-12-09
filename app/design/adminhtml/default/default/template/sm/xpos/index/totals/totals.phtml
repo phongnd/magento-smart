@@ -1,0 +1,336 @@
+<?php
+//var_dump($this->getTotalData('subtotal'));
+//var_dump($this->getTotalData('tax'));
+//var_dump($this->getTotalData('shipping'));
+//var_dump($this->getTotalData('discount'));
+//var_dump($this->getTotalData('grand_total'));
+?>
+<div class="block-pay order-totals" id="order-totals">
+    <input type="hidden" name="order_subtotal" id="order_subtotal" value="<?php echo $this->getTotalData('subtotal'); ?>">
+    <input type="hidden" name="order_tax" id="order_tax" value="<?php echo $this->getTotalData('tax'); ?>">
+    <input type="hidden" name="order_shipping" id="order_shipping" value="<?php echo $this->getTotalData('shipping'); ?>">
+    <input type="hidden" name="order_discount" id="order_discount" value="<?php echo $this->getTotalData('discount'); ?>">
+    <input type="hidden" name="order_grandtotal" id="order_grandtotal" value="<?php echo $this->getTotalData('grand_total'); ?>">
+    <input type="hidden" name="url_get_id_quote" id="url_get_id_quote" value="<?php echo str_replace("___SID=U","",Mage::helper('adminhtml')->getUrl('adminhtml/xpos/getIdQuote')); ?> ">
+    <div class="cash">
+        <span id="transaction_list_button" onclick="showTransactionList()">Cash Drawer</span>
+    </div>
+    <div class="amount">
+        <label>Amount Tendered</label>
+        <input id="cash-in" name="cash-in" class="number" type="text" value="0.00" onkeypress="handle_amount_press(event)"/>
+    </div>
+    <div class="change">
+        <label>Change</label>
+        <div class="value-change">
+            <input id="balance" name="balance" type="text" value="0.00" readonly/>
+        </div>
+    </div>
+    <div class="button-pay">
+        <button type="button" id="btn_checkout"
+                onclick="xpos_checkout(<?php echo Mage::getStoreConfig('xpos/general/checkoutcomfirm'); ?>)">PAY
+        </button>
+    </div>
+
+    <?php if (Mage::getStoreConfig('xpos/general/checkoutcomfirm')) { ?>
+
+        <div id="checkout_popup" class="popup">
+            <div class="panel_block" id="till-chooser">
+                <h4>Order #<span id="new_order_id"></span> created successfully</h4>
+                <ul class="option-till" id="option-list">
+                    <?php if (Mage::getStoreConfig('xpos/general/create_invoice_display')){ ?>
+                        <li class="level-1 <?php if (Mage::getStoreConfig('xpos/general/create_invoice')) {
+                            echo "active";
+                        } ?>"  id="invoice_toggle" name="invoice_toggle">
+                            <a href="javascript:" id="option1-button" class="option"
+                               onclick="setCheckBox('invoice_toggle');">Create invoice</a>
+                        </li>
+                    <?php } ?>
+                    <?php if (Mage::getStoreConfig('xpos/general/create_shipment_display')){ ?>
+                        <li
+                            class="level-1 <?php if (Mage::getStoreConfig('xpos/general/create_shipment')) {
+                            echo "active";
+                        } ?>" id="shipment_toggle" name="shipment_toggle">
+                            <a href="javascript:" id="option1-button" class="option"
+                               onclick="setCheckBox('shipment_toggle');">Create shipment</a>
+                        </li>
+                    <?php } ?>
+                    <li class="level-1 <?php if (Mage::getStoreConfig('xpos/receipt/print_receipt')) {
+                        echo "active";
+                    } ?>" id="receipt_toggle" name="receipt_toggle">
+                        <a href="javascript:" id="option1-button" class="option"
+                           onclick="setCheckBox('receipt_toggle');">Print receipt</a>
+                    </li>
+                    <?php if (Mage::getStoreConfig('xpos/receipt/enabled')) { ?>
+                        <li class="email-option level-1 <?php if (Mage::getStoreConfig('xpos/receipt/email_receipt')) {
+                            echo "active";
+                        } ?>" id="mail_toggle" name="mail_toggle">
+                            <a href="javascript:" id="option3-button" class="option" onclick="setCheckBox('mail_toggle');">
+                                <label>Email:</label>
+                            </a>
+                            <input type="email" name="emailreceipt" id="emailreceipt" placeholder="Email receipt" value=""/>
+                        </li>
+                    <?php } ?>
+                </ul>
+                <div class="action">
+                    <button onclick="checkoutConfirm()" id="" type="button">OK</button>
+                </div>
+            </div>
+        </div>
+
+    <?php } ?>
+
+</div>
+
+<script type="text/javascript">
+
+    jQuery(document).ready(function () {
+        updateTotals();
+        var target = document.getElementById("cash-in");
+        createSelection(0, 10, target);
+        // Check cashier permission
+        var limit = jQuery('#is_user_limited').val();
+        if(limit==0){
+            jQuery('#invoice_toggle').css('display','none');
+            jQuery('#shipment_toggle').css('display','none');
+        }
+        //Change product in cart of bundle product
+        jQuery('body').on("click",'.config_change',function(){
+            var classes = jQuery(this).attr('class');
+            var split_classes = classes.split(" ");
+            var last_class = split_classes[3];
+            //alert(last_class);
+            var last_split= last_class.split("-");
+            var id= last_split[2];
+            if(last_split.length==4){
+                var id_item = id+"-"+last_split[3] //before submit id like "165-0"
+                //alert(id_item);
+                changeProductBundle(id,id_item);
+            }else{
+                //var url = jQuery('#url_get_id_quote').val();
+                var url = '<?php echo Mage::helper('adminhtml')->getUrl('adminhtml/xpos/getIdQuote') ?>';
+                new Ajax.Request(url, {
+                    method: 'post',
+                    parameters: 'quote_item_id='+id,
+                    onComplete: function(transport) {
+                        var data = transport.responseText.evalJSON();
+                        var product_id = data.product_id;
+                        //alert(product_id);
+                        changeProductBundle(product_id,id);
+                    }
+                });
+            }
+        });
+        //end
+        //set customer email popup
+        var email = jQuery('#cus_email_temp').val();
+        if(email.length >3)
+            jQuery('#emailreceipt').val(email);
+
+    });
+
+    //change discount
+    function change_discount_value(){
+        var value = jQuery('#discount_value').val();
+        if(value==0.00){
+            jQuery('#discount_change').val(0);
+            return false;
+        }
+        else{
+            jQuery('#discount_change').val(1);
+        }
+    }
+
+    // ajax change discount
+
+    function change_discount(value){
+
+        var url = '<?php echo Mage::helper('adminhtml')->getUrl('adminhtml/xpos/calDiscount') ?>';
+        //var value = jQuery('#discount_value').val();
+        if(value==0.00){
+            return false;
+        }
+        var convert_value = value.split("%");
+        if(convert_value.length==2){
+            var string = jQuery('#subtotal_value').html();
+            var new_string = string.replace(",","");
+            var current_discount = parseFloat(new_string*1);
+            var new_value = parseFloat(convert_value[0]);
+            if (new_value < 0 || isNaN(new_value) || !onFlyDiscount || new_value>100) {
+                var current = parseFloat(jQuery('#discount_hidden_current').val());
+                jQuery('#discount_value').val(current);
+                return;
+            }
+            else{
+                if(current_discount< 0 || isNaN(current_discount) || !onFlyDiscount )
+                    return;
+                var new_discount = ((new_value)*0.01*current_discount).toFixed(2);
+                // alert(new_discount);
+                new Ajax.Request(url, {
+                    method: 'post',
+                    parameters: 'custom-discount='+new_discount,
+                    onComplete: function(transport) {
+                        var data = transport.responseText.evalJSON();
+                        order.itemsUpdateCoupon(data.couponCode);
+                        jQuery('#discount_value').val(0-new_discount);
+                        jQuery('#discount_hidden_current').val(0-new_discount);
+                        jQuery('#discount_hidden').val(data.couponCode);
+                    }
+                });
+
+            }
+        }else{
+            var value = parseFloat(jQuery('#discount_value').val());
+            new Ajax.Request(url, {
+                method: 'post',
+                parameters: 'custom-discount='+value,
+                onComplete: function(transport) {
+                    var data = transport.responseText.evalJSON();
+                    order.itemsUpdateCoupon(data.couponCode);
+                    jQuery('#discount_value').val(0-value);
+                    jQuery('#discount_hidden_current').val(0-value);
+                    jQuery('#discount_hidden').val(data.couponCode);
+                }
+            });
+        }
+
+    }
+
+
+    $('cash-in').observe('blur', function (e) {
+        updateBalance();
+    });
+
+    function handle_amount_press(e) {
+        if (e.keyCode === 13) {
+            updateBalance();
+        }
+        return false;
+    }
+
+    function updateBalance() {
+        var cash_in = jQuery('#cash-in').val();
+        if(cash_in == ''){
+            jQuery('#cash-in').val('0.00');
+        }
+        if(isOnline())
+            var grandtotal = parseFloat(jQuery("#order_grandtotal").val()).toFixed(2);
+        else
+            var grandtotal = parseFloat(jQuery("#grandtotal").text()).toFixed(2);
+        var cash_in = parseFloat(jQuery("#cash-in").val()).toFixed(2);
+        var balance = cash_in - grandtotal;
+        if (balance < 0) {
+            jQuery("#cash-in").val(grandtotal);
+            return false;
+        }
+        jQuery("#cash-in").val(cash_in);
+        jQuery("#balance").val(balance.toFixed(2));
+    }
+
+    function updateTotals() {
+        var subtotal = parseFloat(jQuery("#order_subtotal").val()).toFixed(2);
+        var tax = parseFloat(jQuery("#order_tax").val()).toFixed(2);
+        var shipping = parseFloat(jQuery("#order_shipping").val()).toFixed(2);
+        var discount = parseFloat(jQuery("#order_discount").val()).toFixed(2);
+        var grandtotal = parseFloat(jQuery("#order_grandtotal").val()).toFixed(2);
+        var payment_method = jQuery("#payment_method_hidden").val();
+        if(grandtotal == 0){
+            displayOrder(currentOrder, true);
+        }else{
+            jQuery("#grandtotal").html(addCommas(grandtotal));
+        }
+        jQuery("#discount_value").val(addCommas(discount));
+        jQuery("#tax_value").html(addCommas(tax));
+        jQuery("#subtotal_value").html(addCommas(subtotal));
+        if (payment_method == 'checkmo' || payment_method == 'cashpayment' || payment_method == 'cashondelivery') {
+            jQuery("#cash-in").removeAttr('readonly');
+            jQuery('#cash-in').css('color','');
+            jQuery("#cash-in").val(grandtotal);
+        } else {
+            jQuery("#cash-in").val(grandtotal);
+            updateBalance();
+            jQuery('#cash-in').css('color','gray');
+            jQuery("#cash-in").attr('readonly', 'readonly')
+        }
+    }
+
+    function xpos_checkout(confirm_checkout) {
+        if (checkShippingInput() && validateCreditCar()) {
+            order.complete('<?php echo $this->getUrl("*/*/complete"); ?>',confirm_checkout);
+        }
+    }
+    function print_invoice(){
+        order.printInvoice();
+    }
+    function print_creditmemo($creditmemo_id){
+        order.printCreditmemo($creditmemo_id);
+    }
+
+    function createSelection(start, end, field) {
+
+        if (field.createTextRange) {
+
+            var newend = end - start;
+            var selRange = field.createTextRange();
+            selRange.collapse(true);
+            selRange.moveStart("character", start);
+            selRange.moveEnd("character", newend);
+            selRange.select();
+        }
+        else if (field.setSelectionRange) {
+
+            field.setSelectionRange(start, end);
+        }
+
+        field.focus();
+    }
+
+    function checkoutConfirm(){
+        if (jQuery('#doemailreceipt').val() == 1 && isOnline() == 1) {
+            var cus_email = jQuery('#emailreceipt').val();
+            if (!order.validEmail(jQuery('#emailreceipt').val())) {
+                if (jQuery('#emailreceipt').html() == '') {
+                    alert('Please enter right email format.');
+                    return false;
+                }
+            }
+            else{
+                jQuery("#tempemailreceipt").val(cus_email);
+            }
+        }
+
+
+        jQuery('#checkout_popup').bPopup().close();
+        order.submit();
+    }
+
+
+    jQuery('#cash-in, .item-price, .item-qty').click(
+        function () {
+            createSelection(0, 10, this);
+        }
+    );
+
+    jQuery('#cash-in').keydown  (function(event) {
+        if (event.shiftKey == true) {
+            event.preventDefault();
+        }
+
+        if ((event.keyCode >= 48 && event.keyCode <= 57) ||
+            (event.keyCode >= 96 && event.keyCode <= 105) ||
+            event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 37 ||
+            event.keyCode == 39 || event.keyCode == 46 || event.keyCode == 190 || event.keyCode == 110) {
+
+        } else {
+            event.preventDefault();
+        }
+
+        if(jQuery(this).val().indexOf('.') !== -1 && event.keyCode == 190)
+            event.preventDefault();
+
+        if(jQuery(this).val().indexOf('.') !== -1 && event.keyCode == 110)
+            event.preventDefault();
+
+        //if a decimal has been added, disable the "."-button
+    });
+
+</script>

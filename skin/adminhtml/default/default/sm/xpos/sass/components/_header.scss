@@ -1,0 +1,219 @@
+
+#header{
+	background-color: #ba0c1a;
+	//background:url("../images/bg-header.png") repeat scroll 50% center #BA0C1A;
+    //padding: 16px 0 11px; 
+    border-bottom: 1px solid #8a8a8a;
+    position: relative;
+    z-index: 10;
+    height: 3%;
+    min-height: 70px;
+	.main-content{
+		position: relative;		
+		.config, .search, #nav, .checkout{
+	    	float: left;
+	    	background: url(../images/line.png) no-repeat right center;
+	    	//height: 70px;
+	    	line-height: 70px;
+	    	&:last-child{ background: none;}
+	    }
+	    .config{
+	    	padding: 0 21px 0 26px;
+	    	width: 124px;
+	    	height: 70px;
+	    	.config-logo{
+	    		height: 70px;
+	    		//margin-top: -1px;
+	    		overflow: hidden;
+		    	#config-button{			
+		    		img{
+		    			width: 100%;
+		    			max-width: 100%;
+		    			//max-height: 100%;
+		    			//display: block;
+		    		}
+		    	}
+	    	}
+	    }
+	    .checkout{
+	    	position: relative;
+	    	width: 23.7%;
+	    	background: none;
+			div{ background: none}
+			.total{
+				font-family: $arialblack;
+				font-size: 30px;
+				color: #fcfcfc;
+				width: 100%;
+				text-align: center;
+			}
+			button.button-checkout{
+				background: url(../images/btn-checkout.png) no-repeat right center;
+				height: 70px;
+				position: absolute;
+				right: 0px;
+				top: 0;
+				width: 100%;
+				text-indent: -1000em;
+			}
+		}
+		button.checkout_mode{
+			background: url(../images/bg-right-header.png) no-repeat right center;
+			height: 70px;
+			position: absolute;
+			right: 0px;
+			top: 0;
+			width: 100%;
+			text-indent: -1000em;
+		}
+	}
+	// .bg-header{
+	// 	background: url(../images/bg-header.png) repeat;
+	// 	width: 50%;
+	// 	position: absolute;
+	// 	top: 0;
+	// 	left: 87.8%;
+	// 	height: 70px;
+	// }	
+}
+.search{
+	margin-left: 19px;
+	padding-right: 19px;
+	input{
+		@include border-radius(4px);
+		width: 282px;
+		color: #aaaaaa;
+		font-size: 14px;
+		border: 1px solid #dddddd;
+		padding: 11px 9px;
+		@include retina-background-image("../images/search-icon",png,19px,19px);
+		background-repeat: no-repeat;
+		background-position: 270px center;
+	}
+}
+
+#nav{
+	>ul li.level-0{
+		float: left;
+		background: url(../images/line.png) no-repeat right center;
+		width: 90px;
+		text-align: center;
+		>a{
+			background: none;
+			color: $white;
+			display: block;
+			cursor: pointer;
+		}
+		.button-save:before{ 
+			display: inline-block;
+			content: "\f0c7";
+			font-size: 22px; 
+		}
+		.button-save{
+			.value-save{
+				font-size: 14px;
+				font-weight: 700;
+				position: absolute;
+				top: -13px;
+			}
+		}
+		.button-cancel:before{
+			content: "\f014";
+			font-size: 24px; 
+		}
+		.button-option:before{
+			content: "\f0dd";
+			font-size: 27px;
+		}
+		>a.active{
+			&:before{ color: $black !important}
+			background-color: $border;
+			margin-right: 2px;
+		}
+		&:last-child{ background: none}				
+	}	
+}
+	
+.option-panel{
+	display: none;
+	list-style: none;
+	position: absolute;
+	right: 21px;
+	background-color: #dddddd;
+	width: 291px;
+	z-index: 9999;
+	top: 70px;
+	padding: 9px 10px;
+	border: 1px solid #c9c9c9;
+	border-top: none;
+	li{
+		background-color: $white;
+		@include border-radius(2px);
+		margin-bottom: 1px;
+		line-height: 49px;
+		a{ 
+			color: $bodyColor;
+			padding-left: 20px;
+			font-size: 14px;
+			font-weight: 700;
+			display: block;
+			text-align: left;
+		}
+		&:hover{
+			// &:before{
+			// 	content: "";
+			// 	width: 6px;
+			// 	background-color: $color-header;
+			// 	height: 49px;
+			// 	position: absolute;
+			// 	left: 10px;
+			// 	@include border-radius(2px 0 0 2px); 	
+			// }
+			a{
+				color: $color-header;
+			}
+		}
+		input{
+			width: 241px;
+		}
+		textarea{
+			width: 241px;
+			height: 118px;
+			resize: none;
+		}		
+	}
+	.email-option{
+		label{ float: left; margin-right: 10px;}
+		input{ width: 190px;}
+	}
+	li.no-hover{
+		&:hover{
+			&:before{ background-color: #fff}
+		}
+	}
+	li.active{
+		&:before{
+			content: "";
+			width: 6px;
+			background-color: $color-header;
+			height: 49px;
+			position: absolute;
+			left: 10px;
+			@include border-radius(2px 0 0 2px); 	
+		}
+		a{
+			color: $color-header;
+		}
+	}
+	li#order-comment{
+		textarea{ margin: 5px 0}
+		&:hover{
+			&:before{
+				height: 130px;
+			}
+		}
+	}
+}
+
+
+

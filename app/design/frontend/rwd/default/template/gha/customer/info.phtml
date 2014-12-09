@@ -1,0 +1,40 @@
+<?php
+$customer = $this->getCustomer();
+//echo "blah"
+//var_dump($customer->getCustomerType());
+?>
+<h1>Blah</h1>
+<?php if ($customer->getCustomerType() == "vendor") : ?>
+	<h2>Welcome Vendor <?php echo $customer->getName(); ?></h2>
+	<form id='sub-customer-create-form' method="post" action='<?php echo $this->getActionOfForm(); ?>'>
+		<div class="fieldset">
+			<h2 class="legend"><?php echo $this->__('Create sub-Customer')?></h2>
+			<div class="field name-firstname">
+				<label class="required" for="firstname"><em>*</em><?php echo $this->__('Email')?></label>
+				<div class="input-box">
+					<input type="text" class="input-text required-entry" maxlength="255" title="Name" value="" name="email" id="email">
+				</div>
+			</div>
+		</div>
+		<button type="button" id="add">Add</button>
+		<!--Button & Link-->
+		<div class="buttons-set">
+			<p class="required">* <?php echo $this->__('Required Fields')?></p>
+			<p class="back-link"><a class="back-link" href="<?php echo $this->getBaseUrl();?>"><small>&laquo;</small>Back</a></p>
+			<button class="button" title="Submit" type="submit"><span><span><?php echo $this->__('Submit')?></span></span></button>
+		</div>
+	</form>
+<?php elseif ($customer->getCustomerType() == "subcustomer"): ?>
+	<p>Welcome Subcustomer <?php echo $customer->getEmail(); ?></p>
+<?php else : ?>
+	<p>Welcome Guest</p>
+<?php endif; ?>
+<script>
+		var count = 0;
+
+		jQuery("#add").on('click',function(){
+			count++;
+			var field = '<div class="fieldset" style=""><h2 class="legend"><?php echo $this->__('Create sub-Customer2')?><label class="required" for="firstname"><em>*</em><?php echo $this->__('Name')?></label><div class="input-box"><input type="text" class="input-text required-entry" maxlength="255" title="Name" value="" name="name'+count+'" id="name'+count+'"></div></div></div>';
+			jQuery("#sub-customer-create-form").append(field);
+		});
+</script>

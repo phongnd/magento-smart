@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <SM_Ccpayment>
+            <version>0.1.0</version>
+        </SM_Ccpayment>
+    </modules>
+
+    <global>
+        <blocks>
+            <ccpayment>
+                <class>SM_Ccpayment_Block</class>
+            </ccpayment>
+        </blocks>
+
+        <models>
+            <ccpayment>
+                <class>SM_Ccpayment_Model</class>
+            </ccpayment>
+            <ccpayment_adminhtml>
+                <class>SM_Ccpayment_Adminhtml_Model</class>
+            </ccpayment_adminhtml>
+        </models>
+
+        <resources>
+            <ccpayment_setup>
+                <setup>
+                    <module>SM_Ccpayment</module>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </ccpayment_setup>
+            <ccpayment_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </ccpayment_write>
+            <ccpayment_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </ccpayment_read>
+        </resources>
+    </global>
+
+    <default>
+        <payment>
+            <ccpayment>
+                <active>0</active>
+                <model>ccpayment/paymentMethod</model>
+                <order_status>pending</order_status>
+                <title>Credit Card</title>
+                <cctypes>AE,VI,MC,DI</cctypes>
+                <payment_action>authorize</payment_action>
+                <allowspecific>0</allowspecific>
+            </ccpayment>
+        </payment>
+    </default>
+</config>

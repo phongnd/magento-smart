@@ -1,0 +1,245 @@
+<div class="main-content">
+    <div class="config">
+        <div class="config-logo">
+            <?php
+            $logo_url = $this->getSkinUrl('sm/xpos/images/logo.png');
+            if(is_file('media/xpos/' . Mage::getStoreConfig('xpos/customize/logo'))){
+                $logo_url = Mage::getBaseUrl('media') . 'xpos/' . Mage::getStoreConfig('xpos/customize/logo');
+            }
+            ?>
+            <a id="config-button" class="hide"><img src="<?php echo $logo_url; ?>"/></a>
+        </div>
+    </div>
+    <div class="search"><input type="text" id="search-box" value="" /></div>
+    <div id="nav">
+        <ul>
+            <li class="save level-0">
+                <a id="save-button" class="button-save" onclick="saveOrder()">
+                    <span id="order_saved_count" class="value-save"></span>
+                </a>
+            </li>
+            <li class="cancel level-0">
+                <a id="save-button" class="button-cancel" onclick="cancelOrder();"></a>
+            </li>
+            <li class="option level-0">
+                <a id="options_checkout_button" class="button-option"
+                   onclick="show_options_checkout()"></a>
+                <ul class="option-panel" id="option-list">
+                    <?php if (!Mage::getStoreConfig('xpos/general/checkoutcomfirm')) { ?>
+
+                        <?php if (Mage::getStoreConfig('xpos/general/create_invoice_display')): ?>
+                            <li class="invoice_option level-1 <?php if (Mage::getStoreConfig('xpos/general/create_invoice')) {
+                                echo "active";
+                            } ?>" id="invoice_toggle" name="invoice_toggle">
+                                <a href="javascript:" id="option1-button" class="option"
+                                   onclick="setCheckBox('invoice_toggle');">Create invoice</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if (Mage::getStoreConfig('xpos/general/create_shipment_display')): ?>
+                            <li class="shipment_option level-1 <?php if (Mage::getStoreConfig('xpos/general/create_shipment')) {
+                                echo "active";
+                            } ?>" id="shipment_toggle" name="shipment_toggle">
+                                <a href="javascript:" id="option1-button" class="option"
+                                   onclick="setCheckBox('shipment_toggle');">Create shipment</a>
+                            </li>
+                        <?php endif; ?>
+                        <li class="level-1 <?php if (Mage::getStoreConfig('xpos/receipt/print_receipt')) {
+                            echo "active";
+                        } ?>" id="receipt_toggle" name="receipt_toggle">
+                            <a href="javascript:" id="option1-button" class="option"
+                               onclick="setCheckBox('receipt_toggle');">Print receipt</a>
+                        </li>
+                        <?php if (Mage::getStoreConfig('xpos/receipt/enabled')) { ?>
+                            <li class="email-option level-1 <?php if (Mage::getStoreConfig('xpos/receipt/email_receipt')) {
+                                echo "active";
+                            } ?>" id="mail_toggle" name="mail_toggle">
+                                <a href="javascript:" id="option3-button" class="option" onclick="setCheckBox('mail_toggle');">
+                                    <label>Email:</label>                                    
+                                </a>
+                                <input type="email" name="emailreceipt" id="emailreceipt" placeholder="Email receipt" value=""/>
+                            </li>
+                        <?php } ?>
+                    <?php } ?>
+
+                    <li class="level-1 no-hover" id="order-comment">
+                        <a href="javascript:" id="option3-button" class="option">
+                            <label>Comment:</label>
+                            <textarea
+                                name="order[comment][customer_note]" placeholder="Comments" spellcheck="false"></textarea>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="checkout">
+        <div id="grandtotal" class="total">0.00</div>
+        <button id="checkout_mode_button" class="checkout_mode" type="button" onclick="change_checkout_mode()">
+            Checkout
+        </button>
+    </div>
+    <div class="clear"></div>
+    <div id="dialog-modal" class="popup"></div>
+</div>
+<script>
+
+    order.commentFieldsBind('order-comment');
+    function cancelOrder() {
+        if (confirm('<?php echo $this->__("Cancel current order?") ?>')) {
+            if (isOnline()) {
+                window.location.href = '<?php echo $this->getUrl('*/*/clear') ?>';
+            }else{
+                clearOrder();
+            }
+        }
+    }
+
+    function submitOffline() {
+        if (isOnline()) {
+            jQuery('#loading-mask').show();
+            var orders = $.jStorage.get("orders");
+            if (orders.length && orders[0].length) {
+                jQuery.ajax({
+                    url: '<?php echo $this->getUrl('adminhtml/xpos/index') ?>',
+                    success: function () {
+                        jQuery.ajax({
+                            url: '<?php echo $this->getUrl('adminhtml/xpos/completeoffline') ?>',
+                            data:orders[0],
+                            dataType:'json',
+                            type:'POST',
+                            success: function (data) {
+                                if (data.status != "success") {
+                                    jQuery('#loading-mask').hide();
+                                    orderInfo = '{"' + unescape(orders[0]).replace(/&/g, '","').replace(/=/g, '":"').replace(/\' /g, '"') + '"}';
+                                    orderJson = jQuery.parseJSON(orderInfo);
+                                    orderJson = jQuery.parseJSON(orderInfo);
+                                    orderJson = jQuery.parseJSON(orderInfo);
+                                    orderInfo = parseOrderInfo(orderJson);
+                                    if (data.msg == '') {
+                                        data.msg = 'Unknown error';
+                                    }
+                                    error = "An error has occured: <strong>'" + data.msg + "'</strong>";
+                                    //jQuery("#dialog-modal").html('<p>' + error + '</p><p style="font-size: 10px">Please make a copy of the order details below and re-submit the order manually if needed. <br />To process with the next order, please click on the below button to delete this order from the queue.</p><p style="background: #DDD; padding: 5px; font-size: 10px; line-height: 11px;">' + orderInfo + '</p>');
+                                    jQuery("#dialog-modal").html('<p>' + error + '</p>');
+
+                                    jQuery('#dialog-modal').bPopup({
+                                        modalClose: false,
+                                        escClose: false,
+                                        opacity: 0.6,
+                                        speed: 450,
+                                        transition: 'slideIn',
+                                        positionStyle: 'fixed' //'fixed' or 'absolute'
+                                    });
+
+                                    /*jQuery("#dialog-modal").dialog({
+                                        resizable: false,
+                                        width: '500',
+                                        modal: true,
+                                        buttons: {
+                                            "Delete this order": function () {
+                                                orders.splice(0, 1);
+                                                $.jStorage.set("orders", orders);
+                                                jQuery('#submitOffline').html(orders.length + ' pending orders');
+                                                jQuery('#loading-mask').hide();
+                                                jQuery(this).dialog("close");
+                                            },
+                                            Cancel: function () {
+                                                jQuery(this).dialog("close");
+                                            }
+                                        }
+                                    });*/
+                                } else {
+                                    orders.splice(0, 1);
+                                    $.jStorage.set("orders", orders);
+                                    jQuery('#count_pending_orders').html(orders.length);
+                                    jQuery('#loading-mask').hide();
+                                    jQuery.ajax({
+                                        url: '<?php echo $this->getUrl('adminhtml/xpos/index') ?>'
+                                    });
+                                    alert('Send 1 order to online');
+                                    //window.open(data.printurl, "_blank", "toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width=760, height=600, left=20, top=20");
+                                }
+                            }
+                        });
+                    }
+                });
+            } else {
+                jQuery('#loading-mask').hide();
+            }
+            transactionMoneyLoaded = false;
+        } else {
+            alert('You are not online!');
+        }
+    }
+
+    function saveOrder(){
+        if(jQuery('#order-items_grid tbody tr').length > 0){
+            order.save('<?php echo $this->getUrl("*/*/save"); ?>','<?php echo $this->__("Are you sure to save this order and move to new order screen?") ?>');
+        }else{
+            showOrderSaved();
+        }
+    }
+
+    function parseOrderInfo(json) {
+        var result = "";
+
+        // process items
+        delete json['form_key'];
+        delete json['entity_id'];
+        delete json['limit'];
+        delete json['page'];
+        delete json['name'];
+        delete json['sku'];
+        delete json['price[from]'];
+        delete json['price[to]'];
+        delete json['order[send_confirmation]'];
+        delete json['calc_total'];
+        delete json['in_products'];
+        delete json['order[account][group_id]'];
+        delete json['order[shipping_method]'];
+        delete json['coupon_code'];
+        delete json['ccsave-swiper-data'];
+        delete json['balance'];
+        // new cust
+        delete json['order[billing_address][firstname_temp]'];
+        delete json['order[billing_address][lastname_temp]'];
+
+
+        if (json.shipping_same_as_billing == "on") {
+            delete json['order[shipping_address][firstname]'];
+            delete json['order[shipping_address][lastname]'];
+            delete json['order[shipping_address][street][0]'];
+            delete json['order[shipping_address][city]'];
+            delete json['order[shipping_address][country_id]'];
+            delete json['order[shipping_address][region]'];
+            delete json['order[shipping_address][postcode]'];
+            delete json['order[shipping_address][telephone]'];
+        }
+
+
+        return '<table><tr><td>' + JSON.stringify(json).substring(2)
+            .replace(/item\[/g, 'Product (id:')
+            .replace(/]\[qty]/g, ') Qty')
+            .replace('order[account][type]', 'Account type')
+            .replace('order[customer_id]', 'Customer Id')
+            .replace('order[account][email]', 'Customer Email')
+            // new customer
+            .replace('order[billing_address][firstname]', 'First Name')
+            .replace('order[billing_address][lastname]', 'Last Name')
+            .replace('order[account][email_temp]', 'Email')
+            .replace('order[billing_address][telephone]', 'Phone')
+
+            .replace('shipping_same_as_billing', 'Use billing as shipping address')
+            .replace('payment[method]', 'Payment method')
+            .replace('order[comment][customer_note]', 'Comments')
+            .replace('cash-in', 'Total Paid')
+            //        .replace('balance','Refunded')
+            .replace(/","/g, '" /></td></tr><tr><td>')
+            .replace(/":"/g, '<td><input type="text" value="')
+            .replace(/"}/g, '') + '" /></td></tr></table>'
+
+
+            ;
+    }
+
+</script>

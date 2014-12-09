@@ -1,0 +1,64 @@
+*     { background:none !important; text-align:left !important; }
+html  { margin:0 !important; padding:0 !important; }
+body  { background:#fff !important; font-size:9pt !important; padding:0 !important; margin:0 !important; }
+a     { color:#2976c9 !important; }
+th,td { color:#333 !important;  border-color:#ccc !important; padding: 2px; font-size: 9pt !important; font-weight: normal; }
+
+.middle { padding:0; }
+
+h1 { text-align:center; text-transform: uppercase;}
+.wrapper { min-width: 0; width: 180px; overflow:hidden }
+.middle { min-height: 0 }
+.entry-edit {
+    margin-bottom: 10px;
+}
+.entry-edit td.label { text-align:right !important; padding-right: 10px; font-size: 9pt !important; }
+.entry-edit td.label .summary-collapse { text-align:right !important }
+.form-list td.label { width:auto; padding: 0 !important; vertical-align: middle; width: 80px; }
+.form-list td.label label { width:auto; font-size: 9pt !important; }
+.form-list td.value { font-size: 9pt !important; }
+.box-left, .box-right {
+    width: auto;
+}
+#store_information {
+    font-size: 9pt !important; margin-bottom: 10px;
+}
+h1.a-center {
+    font-size: 11pt !important;
+}
+.a-center strong {
+    font-weight: normal !important;
+}
+td.a-right {
+    font-size: 9pt !important;
+}
+.footer {
+    background: none;
+}
+.price-excl-tax .price {
+    font-weight: normal;
+}
+.order-tables td h5.title {
+    font-weight: normal; font-size: 9pt !important;
+}
+.grid table, .grid table td, .grid tr.headings th {border: none}
+.grid th, .grid td {padding: 2px 0;}
+.grid .no_col {display: none;}
+
+/*
+* print styles
+* inlined to avoid required HTTP connection www.phpied.com/delay-loading-your-print-css/
+*/
+@media print {
+* { background: transparent !important; color: #444 !important; text-shadow: none !important; line-height: 1; }
+a, a:visited { color: #444 !important; text-decoration: underline; }
+a:after { content: " (" attr(href) ")"; }
+abbr:after { content: " (" attr(title) ")"; }
+pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
+thead { display: table-header-group; } /* css-discuss.incutio.com/wiki/Printing_Tables */
+tr, img { page-break-inside: avoid; }
+@page { margin: 0cm; }
+p, h2, h3 { orphans: 3; widows: 3; }
+h2, h3{ page-break-after: avoid; }
+/*body {font-family: "MS Gothic" !important;}*/
+}

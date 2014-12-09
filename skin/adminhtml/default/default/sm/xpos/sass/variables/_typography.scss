@@ -1,0 +1,27 @@
+
+
+@mixin font-face($fontname: fontFamilyName, $fontsrc: fontFileSrc) {
+  @font-face {
+    font-family: quote($fontname);
+    src:  url('#{unquote($fontsrc)}.eot');
+    src:  url('#{unquote($fontsrc)}.eot?#iefix')                  format('embedded-opentype'),
+          url('#{unquote($fontsrc)}.woff')                        format('woff'),
+          url('#{unquote($fontsrc)}.ttf')                         format('truetype'),
+          url('#{unquote($fontsrc)}.svg##{unquote($fontname)}')   format('svg');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+}
+
+@include font-face("arialblack-webfont",           "../fonts/arialblack-webfont");
+@include font-face("fontawesome-webfont",           "../fonts/fontawesome-webfont");
+
+
+$sansFontFamily:                  Arial, "Helvetica Neue", Helvetica, sans-serif;
+$serifFontFamily:                   Georgia, "Times New Roman", Times, serif;
+$monoFontFamily:                 Monaco, Menlo, Consolas, "Courier New", monospace;
+
+$arialblack :            arialblack-webfont;
+$font-icon:              fontawesome-webfont;
+

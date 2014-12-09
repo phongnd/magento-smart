@@ -1,0 +1,35 @@
+*     { background:none !important; text-align:left !important; }
+html  { margin:0 !important; padding:0 !important; }
+body  { background:#fff !important; font-size:9pt !important; padding:0 !important; margin:0 !important; }
+a     { color:#2976c9 !important; }
+th,td { color:#333 !important;  border-color:#ccc !important; }
+
+.middle { padding:0; }
+
+h1 { text-align:center; text-transform: uppercase;}
+.wrapper { min-width:595px; width:595px; overflow:hidden }
+.middle { padding:5px;min-height: 0 }
+.entry-edit td.label { text-align:right !important;padding-right:30px }
+.entry-edit td.label .summary-collapse { text-align:right !important }
+.form-list td.label { width:auto }
+.form-list td.label label { width:auto }
+
+.grid .no_col {display: none;}
+
+/*
+* print styles
+* inlined to avoid required HTTP connection www.phpied.com/delay-loading-your-print-css/
+*/
+@media print {
+* { background: transparent !important; color: #444 !important; text-shadow: none !important; line-height: 1; }
+a, a:visited { color: #444 !important; text-decoration: underline; }
+a:after { content: " (" attr(href) ")"; }
+abbr:after { content: " (" attr(title) ")"; }
+pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
+thead { display: table-header-group; } /* css-discuss.incutio.com/wiki/Printing_Tables */
+tr, img { page-break-inside: avoid; }
+@page { margin: 0cm; }
+p, h2, h3 { orphans: 3; widows: 3; }
+h2, h3{ page-break-after: avoid; }
+/*body {font-family: "MS Gothic" !important;}*/
+}

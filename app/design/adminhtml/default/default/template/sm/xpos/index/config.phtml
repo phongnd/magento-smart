@@ -1,0 +1,39 @@
+<div id="sidebar" style="display: none">
+    <ul id="sidebar_menu_items">
+<!--        <li id="report_menu_item"><a href="--><?php //echo Mage::helper("adminhtml")->getUrl("*/report/xpos");?><!--" target="_blank" class="report">Report</a></li>-->
+        <li id="report_menu_item" ><a href="#" class="report"> Report</a></li>
+        <li id="order_list_menu_item"><a href="javascript:" onclick="showOrderList()" class="order">Order List</a></li>
+        <li id="staft_menu_item"><a href="<?php echo Mage::helper("adminhtml")->getUrl("*/cashier");?>" target="_blank" class="staff">Staff</a></li>
+        <?php if(Mage::getStoreConfig('xpos/general/integrate_xmwh_enabled') == 1){ ?>
+            <li id="warehouse_menu_item"><a href="javascript:" onclick="xpos_change_warehouse()" class="warehouse">Warehouse</a></li>
+        <?php } ?>
+        <li id="admin_menu_item"><a href="<?php echo Mage::helper("adminhtml")->getUrl("*/system_config/edit/section/xpos/");?>" target="_blank" class="admin">Admin</a></li>
+        <?php if(Mage::getStoreConfig('xpos/general/enabled_cashier')){ ?>
+        <li id="logout_menu_item"><a href="javascript:" onclick="xpos_user_logout()" class="logout">Logout</a></li>
+        <?php } ?>
+               
+    </ul>
+    <ul class="button-bottom">
+        <li id="manual_reload_button"><a href="javascript:" onclick="manual_reload()">Manual Reload</a></li>
+        <?php if(Mage::getStoreConfig('xpos/offline/offline_mode') == 1){ ?>
+        <li><a href="javascript:" onclick="submitOffline()"><span id="count_pending_orders">0</span> Pending Orders </a></li>
+        <?php } ?>
+    </ul>    
+</div>
+
+<script>
+    jQuery('body').on('click','#report_menu_item',function(){
+        showReportMenu();
+    });
+
+    jQuery('body').on('click','#config-button',function(){
+        var limit  = jQuery('#is_user_limited').val();
+        if(limit==0){
+            jQuery('#admin_menu_item').html();
+            jQuery('#admin_menu_item').prop('style',"display:none");
+            jQuery('#staft_menu_item').html();
+            jQuery('#staft_menu_item').prop('style',"display:none");
+        }
+    });
+
+</script>

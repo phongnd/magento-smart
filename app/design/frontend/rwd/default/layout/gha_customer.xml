@@ -1,0 +1,25 @@
+<?xml version='1.0' ?>
+<layout>
+    <gha_customer_index_index>
+        <reference name="content">
+            <block type="gha_customer/customer" as="gha.info" name="gha.customer.info"
+                   template="gha/customer/info.phtml"/>
+        </reference>
+    </gha_customer_index_index>
+    <gha_create_customer_link>
+        <reference name="customer_account_navigation">
+            <action method="addLink" translate="label">
+                <name>create_subcustomer</name>
+                <path>gha</path>
+                <label>Create Subcustomer</label>
+            </action>
+        </reference>
+    </gha_create_customer_link>
+    <customer_account>
+        <reference name="customer_account_navigation">
+            <action method="removeLinkByName">
+                <name>recurring_profiles</name>
+            </action>
+        </reference>
+    </customer_account>
+</layout>

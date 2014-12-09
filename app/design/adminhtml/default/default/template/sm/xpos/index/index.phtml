@@ -1,0 +1,381 @@
+<script type="text/javascript">
+    var $jQuery = jQuery.noConflict();
+    //<![CDATA[
+    var order = new AdminOrder(<?php echo $this->getOrderDataJson() ?>);
+    <?php $url =  $this->getLoadBlockUrl();
+        $url2 = Mage::getModel('core/url')->sessionUrlVar($url);
+    ?>
+    var convert_url = "<?php echo $url2;  ?>";
+        order.setLoadBaseUrl(convert_url);
+    var payment = {};
+    payment.switchMethod = order.switchPaymentMethod.bind(order);
+    var priceFormat = <?php echo json_encode(Mage::app()->getLocale()->getJsPriceFormat()); ?>;
+    var receiptPriceFormat = <?php echo json_encode(Mage::app()->getLocale()->getJsPriceFormat()); ?>;
+    priceFormat.pattern = '%s';
+    //]]>
+</script>
+<style>
+    <?php if(Mage::getStoreConfig('xpos/customize/color_banner') != ''){ ?>
+    #header,.popup h4,.creat-customer .title.active, .search-customer .search.active, .button-pay button,
+    .popup-detail-order > h4, .popup-creditmemo > h4, button.scalable,
+    #center #product-info li:hover .price, #center #product-info li.active .price,
+    #order-order_view .form-buttons button,
+    #center #category-info ul li:hover, #center #category-info ul li.active,
+    #right ul li .checkout-item.active:before, #right ul li .checkout-item:hover:before, #right ul li #order-shipping-method-summary:hover:before,#left .customer-search .search-customer .result ul li:hover:before,
+    #login_popup #xpos-login ul li:hover:before, #till_popup #till-chooser ul li:hover:before, #till_popup #warehouse-chooser ul li:hover:before, #till_popup #warehouse-chooser ul li:active:before, #warehouse_popup #till-chooser ul li:hover:before, #warehouse_popup #warehouse-chooser ul li:hover:before, .panel_block .option-till li.active:before, .option-panel li.active:before{
+        background-color: <?php echo '#'.Mage::getStoreConfig('xpos/customize/color_banner')?> !important;
+    }
+    #center #product-info .configurable, #center #product-info .bundle, #center #product-info .grouped,
+    #left #items_area table tr.config td.subtotal .subtotal-list > span{
+        border-color: transparent <?php echo '#'.Mage::getStoreConfig('xpos/customize/color_banner')?> transparent transparent !important;
+    }
+    #center #product-info li:hover, #center #product-info li.active{
+        border: 1px solid <?php echo '#'.Mage::getStoreConfig('xpos/customize/color_banner')?> !important;
+    }
+    #report_popup .item_report{
+        background-color: <?php echo '#'.Mage::getStoreConfig('xpos/customize/color_banner')?> !important;
+    }
+    <?php } ?>
+    <?php if(Mage::getStoreConfig('xpos/customize/color_text') != ''){ ?>
+    #left .box-left p a, #left .box-right p a, #left #items_area table tr td.qty input, #left #items_area table tr td.qty input, #left #items_area table tr td.price input, #right ul li .checkout-item.active a, #right ul li .checkout-item.active label, #right ul li .checkout-item.active > span, #right ul li .checkout-item.active h4, #right ul li .checkout-item:hover a, #right ul li .checkout-item:hover label, #right ul li .checkout-item:hover > span, #right ul li .checkout-item:hover h4, #right ul li #order-shipping-method-summary:hover a, #right ul li #order-shipping-method-summary:hover label, #right ul li #order-shipping-method-summary:hover > span, #right ul li #order-shipping-method-summary:hover h4, #config-panel #sidebar ul li a:hover, #config-panel .button-bottom li a, .option-panel li:hover a, .option-panel li.active a,#left #customer_bar .search-customer.active, #left .summary-items ul li.discount input, .panel_block .option-till li.active a, #checkout_popup ul.option-till li:hover a, #till_popup #till-chooser ul li:hover a, #till_popup #till-chooser ul li:active a, #till_popup #warehouse-chooser ul li:hover a, #till_popup #warehouse-chooser ul li:active a, #warehouse_popup #till-chooser ul li:hover a, #warehouse_popup #till-chooser ul li:active a, #warehouse_popup #warehouse-chooser ul li:hover a, #warehouse_popup #warehouse-chooser ul li:active a, #footer #footer_left .network-offline:before, #right .block-pay .amount input{
+        color: <?php echo '#'.Mage::getStoreConfig('xpos/customize/color_text')?> !important;
+    }
+    <?php } ?>
+    <?php if(Mage::getStoreConfig('xpos/customize/color_icon') == 1){ ?>
+         #nav > ul li.level-0 .button-save:before, #nav > ul li.level-0 .button-cancel:before, #nav > ul li.level-0 .button-option:before, #nav > ul li.level-0 .button-save .value-save, #header .main-content .checkout .total, #center #product-info li:hover .price > span, #center #product-info li.active .price > span, #center #category-info ul li:hover a, #center #category-info ul li.active a, #right .block-pay .button-pay button, #left .customer-search .creat-customer .title.active, #left .customer-search .search-customer .search.active label, .popup h4, .popup button, .popup-detail-order > h4, .popup-creditmemo > h4, #order-order_view .form-buttons button, button.scalable{ color: #333333 !important;}
+        #report_popup ul li, #report_popup ul li a{
+            color: #333333 !important;
+        }
+    <?php } ?>
+    <?php if(Mage::getStoreConfig('xpos/customize/color_icon') == 0){ ?>
+    #report_popup ul li, #report_popup ul li a{
+        color: #ffffff !important;
+    }
+    <?php } ?>
+
+</style>
+<?php echo $this->getChildHtml('xpos.login') ?>
+<?php echo $this->getChildHtml('xpos.warehouse') ?>
+<?php echo $this->getChildHtml('xpos.till') ?>
+<div id="xpos">
+    <form id="edit_form" action="<?php echo $this->getSaveUrl() ?>" method="post" enctype="multipart/form-data">
+        <?php echo $this->getBlockHtml('formkey') ?>
+        <input type="hidden" id="reload_order" value="<?php echo ($this->getRequest()->getParam('order_id'));  ?>">
+        <input type="hidden" id="magento_version" value="<?php echo Mage::getVersion(); ?>">
+        <input type="hidden" id="magento_type" value="<?php echo  Mage::getEdition(); ?>">
+        <input type="hidden" id="store_credit_enable" value="<?php echo  Mage::getStoreConfig('customer/enterprise_customerbalance/is_enabled'); ?>">
+        <input type="hidden" id="store_credit_use" value="" >
+        <input type="hidden" id="doprintreceipt" name="doprintreceipt" value="<?php echo Mage::getStoreConfig('xpos/receipt/print_receipt')?>"/>
+        <input type="hidden" id="doemailreceipt" name="doemailreceipt" value="<?php echo Mage::getStoreConfig('xpos/receipt/email_receipt')?>"/>
+        <input type="hidden" id="tempemailreceipt" name="tempemailreceipt" value=""/>
+        <input type="hidden" id="warehouse_id" name="warehouse_id" value=""/>
+        <input type="hidden" id="till_id" name="till_id" value=""/>
+        <input type="hidden" id="xpos" name="xpos" value="1"/>
+        <input type="hidden" id="xpos_user_id" name="xpos_user_id" value=""/>
+        <input type="hidden" id="is_user_limited"name="is_user_limited"  value="">
+        <input type="hidden" id="doshipment" name="doshipment" value="<?php echo Mage::getStoreConfig('xpos/general/create_shipment')?>"/>
+        <input type="hidden" id="doinvoice" name="doinvoice" value="<?php echo Mage::getStoreConfig('xpos/general/create_invoice')?>"/>
+        <input type="hidden" id="checkoutcomfirm" name="checkoutcomfirm" value="<?php echo Mage::getStoreConfig('xpos/general/checkoutcomfirm'); ?>"/>
+        <input type="hidden" id="keyboard_shortcut" name="keyboard_shortcut" value="<?php echo Mage::getStoreConfig('xpos/general/shortcut_enable'); ?>"/>
+        <input type="hidden" id="offline_synchronize" name="offline_synchronize" value="<?php echo Mage::getStoreConfig('xpos/offline/offline_mode'); ?>"/>
+        <input type="hidden" id="data_load_interval" name="data_load_interval" value="<?php echo Mage::getStoreConfig('xpos/offline/data_load_interval'); ?>"/>
+
+        <input type="hidden" id="price_includes_tax" name="price_includes_tax" value="<?php echo Mage::getStoreConfig('tax/calculation/price_includes_tax'); ?>">
+        <input type="hidden" id="lucky_search" name="lucky_search" value="<?php echo Mage::getStoreConfig('xpos/search/lucky_search'); ?>">
+        <input type="hidden" id="last_key_search" name="last_key_search" value="">
+
+        <input type="hidden" id="print_creditmemo_url" name="print_creditmemo_url" value="<?php echo $this->getUrl('*/xpos/printCreditmemo'); ?>" >
+        <input type="hidden" id="print_invoice_url" name="print_invoice_url" value="<?php echo $this->getUrl('*/xpos/printInvoice'); ?>" />
+        <input type="hidden" id="check_order_url" name="check_order_url" value="<?php echo $this->getUrl('*/xpos/checkOrder'); ?>" />
+        <input type="hidden" id="print_zreport_rul" name="print_zreport_rul" value="<?php echo $this->getUrl('*/report/printZreport'); ?>" />
+
+        <input type="hidden" id="sm_order_id" name="sm_order_id" value="" />
+        <input type="hidden" id="result_number_search" name="result_number_search" value="<?php echo Mage::getStoreConfig('xpos/search/number_result'); ?>" >
+        <input type="hidden" id="alert_box_stt" name="alert_box_stt" value="" >
+
+        <input type="hidden" id="day_report_type" name="day_report_type" value="" >
+        <input type="hidden" id="enable_zreport" name="enable_zreport" value="<?php echo  Mage::getStoreConfig('xpos/report/enable_zreport') ;?>" >
+        <input type="hidden" id="admin_zreport" name="admin_zreport" value="<?php echo  Mage::getStoreConfig('xpos/report/admin_zreport'); ?>" >
+        <input type="hidden" id="enable_xreport" name="enable_xreport" value="<?php echo Mage::getStoreConfig('xpos/report/enable_xreport'); ?>" >
+        <input type="hidden" id="admin_xreport" name="admin_xreport" value="<?php echo Mage::getStoreConfig('xpos/report/admin_xreport'); ?>" >
+        <input type="hidden" id="enable_linkreport" name="enable_linkreport" value="<?php echo  Mage::getStoreConfig('xpos/report/enable_linkreport'); ?>" >
+        <input type="hidden" id="admin_linkreport" name="admin_linkreport" value="<?php echo Mage::getStoreConfig('xpos/report/admin_linkreport') ;?>" >
+        <input type="hidden" id="default_transfer" name="default_transfer" value="<?php echo Mage::getStoreConfig('xpos/report/default_transfer'); ?>" >
+        <input type="hidden" id="grand_before" name="grand_before" value="" >
+        <input type="hidden" id="cus_email_temp" name="cus_email_temp" value="" >
+        <input type="hidden" id="set_transac_flag" name="set_transac_flag" value="" >
+        <input type="hidden" id="transfer_val" name="transfer_val" value="" >
+
+        <div id="config-panel">
+            <?php echo $this->getChildHtml('xpos.sidebar') ?>
+        </div>
+        <div class="xpos-wrapper">
+            <div id="header">
+                <?php echo $this->getChildHtml('xpos.header') ?>
+            </div>
+            <div id="content">
+                <div id="order-message" class="message" style="display: none">
+                    <?php echo $this->getChildHtml('message') ?>
+                </div>
+                <div id="left">
+                    <div id="customer_bar">
+                        <span id="customer_options" class="search-customer" onclick="show_customer_search()"></span>
+                        <span class="add-customer" onclick="show_customer_area()" id="customer_name"><?php echo Mage::getStoreConfig('xpos/guest/guest_name') ?></span>
+                        <span class="list-customer disabled" onclick="showOrderListCustomer()"></span>
+                    </div>
+
+                    <div id="items_area">
+                        <?php echo $this->getChildHtml('items') ?>
+
+                        <div id="summary-items" class="summary-items">
+                            <ul>
+                                <li>
+                                    <span class="label">Item<i>(s)</i></span>
+                                    <span class="value" id="item_count_value">0</span>
+                                </li>
+                                <li class="discount">
+                                    <span class="label">Discount</span>
+                                    <!--<input type="number" id="discount_value" value="0.0">-->
+                                    <!--                                        <span class="value" id="discount_value">0.0</span>-->
+                                    <input class="input-text item-price value" id="discount_value" value="0.00" name="" onchange="change_discount_value()" maxlength="12" />
+                                    <!-- <span class="value" id="discount_value">0.0</span></input>-->
+                                    <input type="hidden" id="discount_hidden" name="discount_hidden" value="" />
+                                    <input type="hidden" id="discount_change" name="discount_change" value="" />
+                                    <input type="hidden" id="discount_hidden_current" name="discount_hidden_current" value="" />
+                                </li>
+                                <li>
+                                    <span class="label">Tax</span>
+                                    <span class="value" id="tax_value">0.0</span>
+                                </li>
+                                <li>
+                                    <span class="label">Subtotal</span>
+                                    <span class="value" id="subtotal_value">0.0</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+                    <div id="customer_area" style="display: none">
+                        <?php echo $this->getChildHtml('customer_info') ?>
+                    </div>
+                    <div id="customer_search" class="customer-search" style="display: none;">
+                        <?php echo $this->getChildHtml('customer_search') ?>
+                    </div>
+                </div>
+                <div id="overlay_left" onclick="change_checkout_mode()" style="display: none"></div>
+                <div id="center">
+                    <?php echo $this->getChildHtml('xpos.right') ?>
+                </div>
+                <div id="right">
+                    <div id="checkout_method_bar">
+                        <div id="payment_tab_button" class="checkout_tab_button active" onclick="show_checkout_area('payment')">
+                            <h2>Payment</h2>
+                            <span id="payment_detail">&nbsp;No Payment</span>
+                        </div>
+                        <div id="shipping_tab_button" class="checkout_tab_button" onclick="show_checkout_area('shipping')">
+                            <h2>Shipping</h2>
+                            <span id="shipping_detail">&nbsp;No Shipping</span>
+                        </div>
+                        <div id="discount_tab_button" class="checkout_tab_button" onclick="show_checkout_area('discount')" >
+                            <h2>Discount</h2>
+                            <span id="discount_detail">&nbsp;No discount</span>
+                        </div>
+                    </div>
+                    <ul id="method_area">
+                        <li id="billing_method_area" class="checkout_area">
+                            <div id="order-billing_method" class="active"><?php echo $this->getChildHtml('billing_method') ?></div>
+                        </li>
+                        <li id="shipping_method_area" class="checkout_area" style="display: none">
+                            <div id="order-shipping_method" class=""><?php echo $this->getChildHtml('shipping_method') ?></div>
+                        </li>
+                        <li id="coupon_area" class="checkout_area" style="display: none">
+                            <div id="order-coupons" class=""><?php echo $this->getChildHtml('coupons') ?></div>
+                            <div id="order-giftcards"class=""> <?php if( Mage::getEdition()=="Enterprise") echo $this->getChildHtml('giftcards')  ?></div>
+                            <div id="order-storecredit" class=""><?php if(Mage::getStoreConfig('customer/enterprise_customerbalance/is_enabled') == 1) echo ($this->getChildHtml('storecredit'));  ?></div>
+
+                            <form action="" id="co-payment-form">
+                                <fieldset>
+                                    <?php echo $this->getChildChildHtml('methods_additional', '', true, true) ?>
+                                    <?php echo $this->getChildHtml('methods') ?>
+                                </fieldset>
+                            </form>
+                        </li>
+                    </ul>
+                    <div id="order-totals" class="order-totals">
+                        <?php echo $this->getChildHtml('totals') ?>
+                    </div>
+                </div>
+                <?php echo $this->getChildHtml('xpos.order_list') ?>
+                <?php echo $this->getChildHtml('order_item_extra_info') ?>
+            </div>
+            <div id="footer">
+                <?php echo $this->getChildHtml('xpos.footer') ?>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="product-option-form" class="popup">
+    <span class="button b-close" id="login_popup_close"></span>
+    <h4>Product Options</h4>
+    <form id="product-option">
+    </form>
+</div>
+
+<script>
+
+    <?php
+        $storeInformation = '';
+        if (Mage::getStoreConfig('general/store_information/name', Mage::getStoreConfig('xpos/general/storeid')) != '') {
+            $storeInformation .= Mage::getStoreConfig('general/store_information/name', Mage::getStoreConfig('xpos/general/storeid')) . "<br/>";
+        }
+        if (Mage::getStoreConfig('general/store_information/address', Mage::getStoreConfig('xpos/general/storeid')) != '') {
+            $storeInformation .= str_replace("\n", "<br/>", Mage::getStoreConfig('general/store_information/address'), Mage::getStoreConfig('xpos/general/storeid')) . "<br/>";
+        }
+        if ($store_phone = Mage::getStoreConfig('general/store_information/phone', Mage::getStoreConfig('xpos/general/storeid'))) {
+            $storeInformation .= 'T: ' . $store_phone;
+        }
+    ?>
+    var xposConfig = <?php echo json_encode(array('skinUrl' => Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN), 'storeInfo' => $storeInformation)); ?>
+
+    jQuery( document ).ready(function( $ ) {
+        jQuery('#loading_mask_loader img').attr("src","<?php echo $this->getSkinUrl('sm/xpos/images/ajax-loader-tr.gif') ?>");
+        initScroll("#method_area");
+    });
+
+    var network_check_interval = <?php echo Mage::getStoreConfig('xpos/offline/network_check_interval') ?>;
+    setTimeout("setInterval(function() { checkNetwork(); } , 1000 * network_check_interval)", network_check_interval);
+    var networkCheck = false;
+    function checkNetwork() {
+        // if another request is active, skip this
+        if (networkCheck){
+            return;
+        }
+        networkCheck = jQuery.ajax({
+            type: 'GET',
+            url: '<?php echo $this->getUrl('adminhtml/xpos/checkNetwork') ?>',
+            timeout: 30000,
+            success: function (data) {
+                if (jQuery('#network-status').val() != 'online'){
+                    alert('The X-POS is now back in online mode. You can resend any pending orders through the Sidebar menu.');
+                    jQuery('#network-status').val('online');
+                    goOnline();
+                }
+                networkCheck = false;
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                networkCheck = false;
+                if (isAvailability()) {
+                    jQuery.ajax({
+                        type: 'GET',
+                        url: '<?php echo $this->getUrl('adminhtml/xpos/checkNetwork') ?>',
+                        timeout: 30000,
+                        success: function (data) {
+                            if (jQuery('#network-status').val() != 'online'){
+                                alert('The X-POS is now back in online mode. You can resend any pending orders through the Sidebar menu.');
+                                jQuery('#network-status').val('online');
+                                goOnline();
+                            }
+                            networkCheck = false;
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            networkCheck = false;
+                            if (isAvailability()) {
+                                jQuery.ajax({
+                                    type: 'GET',
+                                    url: '<?php echo $this->getUrl('adminhtml/xpos/checkNetwork') ?>',
+                                    timeout: 30000,
+                                    success: function (data) {
+                                        if (jQuery('#network-status').val() != 'online'){
+                                            alert('The X-POS is now back in online mode. You can resend any pending orders through the Sidebar menu.');
+                                        }
+                                        jQuery('#network-status').val('online');
+                                        networkCheck = false;
+                                    },
+                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                        jQuery('#network-status').val('offline');
+                                        goOffline();
+                                        networkCheck = false;
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } else {
+                    //still offline
+                }
+            }
+        });
+    }
+    function toggleOfflineMode(){
+        var mode_current = jQuery('#network-availability').attr('class');
+        if(mode_current == 'network-online'){
+            goOffline();
+        }else{
+            goOnline();
+        }
+    }
+    function goOffline() {
+        jQuery('#network-availability').removeAttr('class');
+        jQuery('#network-availability').attr('class','network-offline');
+        show_menu_item_sidebar(1);
+        jQuery('#options_checkout_button').attr('onclick','').unbind('click');
+        jQuery('#save-button').attr('onclick','').unbind('click');
+        jQuery('#transaction_list_button').attr('onclick','').unbind('click');
+        if(jQuery('#offline_synchronize').val() == 0){
+            jQuery('#btn_checkout').attr('onclick','').unbind('click');
+        }
+        jQuery('.list-customer').addClass('disabled');
+        jQuery('#discount_value').attr('readonly','readonly');
+        jQuery("#payment_detail").html('Check / Money order');
+        jQuery("#billing_method_area").html('<div class="active" id="order-billing_method"><div><div id="order-billing_method_form"><div class="payment-methods"><div class="payment-method-item checkout-item active" id="p_method_free"><span>Check / Money Order</span></div></div><div id="payment_method_validate"></div><input type="hidden" value="checkmo" name="payment[method]" id="payment_method_hidden"></div></div></div>');
+        jQuery("#shipping_detail").html('Free');
+        jQuery("#shipping_method_area").html('<div onclick="select_shipping_method(\'freeshipping\')" id="s_method_freeshipping" class="shipping-method-item checkout-item active"><span onclick="order.setShippingMethod(\'freeshipping_freeshipping\',\'Free\')">Free Shipping :Free                                -<span class="price">$0.00</span></span></div>');
+
+        <?php if (!Mage::getStoreConfig('xpos/search/offlinesearch')){ ?>
+        jQuery('#customer_search_field').val('');
+        jQuery('#search-box').val('');
+        jQuery('#customer_search_field').attr('disabled','disabled');
+        jQuery('#search-box').attr('disabled','disabled');
+        <?php } ?>
+    }
+    function goOnline(){
+        jQuery('#discount_value').removeAttr('readonly')
+        jQuery('#network-availability').removeAttr('class');
+        jQuery('#network-availability').attr('class','network-online');
+        show_menu_item_sidebar(0);
+        <?php if (!Mage::getStoreConfig('xpos/search/offlinesearch')){ ?>
+        jQuery('#customer_search_field').removeAttr('disabled');
+        jQuery('#search-box').removeAttr('disabled');
+        <?php } ?>
+
+        jQuery("#payment_detail").html('No Payment');
+        jQuery("#billing_method_area").html('<div class="active" id="order-billing_method"><div><div id="order-billing_method_form"><div class="payment-methods"><div class="payment-method-item checkout-item active" id="p_method_free"><span>No Payment Methods</span></div></div><div id="payment_method_validate"></div><input type="hidden" value="checkmo" name="payment[method]" id="payment_method_hidden"></div></div></div>');
+        jQuery("#shipping_detail").html('No Shipping');
+        jQuery("#shipping_method_area").html('<div class="active" id="order-shipping_method"><div><div id="order-shipping-method-choose"><div class="shipment-methods"><div class="shipping-method-item checkout-item active"><span>No Shipping Methods</span></div></div></div></div></div>');
+
+        jQuery('#options_checkout_button').attr('onclick','show_options_checkout()');
+        jQuery('#transaction_list_button').attr('onclick','showTransactionList()');
+        jQuery('#save-button').attr('onclick','saveOrder()');
+        jQuery('#btn_checkout').attr('onclick','xpos_checkout(0)');
+    }
+
+    var initialLoad = true;
+    jQuery(document).ready(function() {
+        initialLoad = false;
+        checkSavedOrder();
+    });
+
+    function checkSavedOrder(){
+        jQuery.ajax({
+            type: 'GET',
+            url: '<?php echo $this->getUrl('adminhtml/xpos/getSavedOrder') ?>',
+            timeout: 30000,
+            success: function (data) {
+                jQuery('#order_saved_count').html(data);
+            }
+        });
+    }
+
+</script>
