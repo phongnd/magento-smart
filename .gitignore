@@ -1,1 +1,33 @@
-/var
+# magento db config #
+####################
+/app/etc/local.xml
+
+# magento folder #
+#####################
+/media/*
+/downloader/*
+/var/*
+!/var/.htaccess
+
+# OS generated files #
+######################
+.DS_Store
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# modman #
+.modman
+
+# eclipse file #
+##############
+.buildpath
+.project
+.settings/*
+
+
+# PhpStorm file #
+.idea/*
+
+# NetBean #
+nbproject/
